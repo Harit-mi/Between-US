@@ -77,7 +77,30 @@ export function App() {
 
     try {
       // Fetch user profile
-      const { data: profile } = await supabase.from('users').select('*').eq('id', userId).single();
+      let { data: profile } = await supabase.from('users').select('*').eq('id', userId).maybeSingle();
+      
+      // Auto-heal missing profile row so profile form never blocks existing login
+      if (!profile || !profile.name) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const defaultName = session?.user?.email ? session.user.email.split('@')[0] : 'User';
+        const autoTz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC';
+        
+        profile = {
+          id: userId,
+          name: defaultName,
+          nickname: defaultName,
+          country: 'Spain',
+          city: 'Madrid',
+          latitude: 40.4168,
+          longitude: -3.7038,
+          language: i18n.language,
+          timezone: autoTz || 'Europe/Madrid',
+          status: 'available',
+        };
+
+        await supabase.from('users').upsert(profile, { onConflict: 'id' });
+      }
+
       if (profile) {
         setUserProfile(profile);
         if (profile.language) {

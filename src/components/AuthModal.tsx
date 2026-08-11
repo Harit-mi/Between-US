@@ -43,8 +43,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
     if (!isSupabaseConfigured) {
       setTimeout(() => {
         const mockUser = { id: 'demo-user-' + Math.random().toString(36).substr(2, 6), email };
-        setCurrentUser(mockUser);
-        setStep('profile');
+        const mockProfile = {
+          id: mockUser.id,
+          name: email.split('@')[0] || 'User',
+          nickname: email.split('@')[0] || 'User',
+          country: 'Spain',
+          city: 'Madrid',
+          timezone: autoTz,
+          status: 'available',
+        };
+        onAuthComplete(mockUser, mockProfile);
         setLoading(false);
       }, 500);
       return;
@@ -75,23 +83,37 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
         if (signInErr) throw signInErr;
 
         if (data.session && data.user) {
-          // Explicitly set the session so Authorization headers are attached immediately
           await supabase.auth.setSession(data.session);
 
           // Fetch profile with authenticated session headers
-          const { data: profile } = await supabase
+          let { data: profile } = await supabase
             .from('users')
             .select('*')
             .eq('id', data.user.id)
             .maybeSingle();
 
-          if (profile && profile.name) {
-            onAuthComplete(data.user, profile);
-            return;
-          } else {
-            setCurrentUser(data.user);
-            setStep('profile');
+          // Auto-heal missing profile row using email prefix so user is never stuck
+          if (!profile || !profile.name) {
+            const defaultName = data.user.email ? data.user.email.split('@')[0] : 'User';
+            const newProfile = {
+              id: data.user.id,
+              name: defaultName,
+              nickname: defaultName,
+              country: 'Spain',
+              city: 'Madrid',
+              latitude: 40.4168,
+              longitude: -3.7038,
+              language: i18n.language,
+              timezone: autoTz || 'Europe/Madrid',
+              status: 'available',
+            };
+
+            await supabase.from('users').upsert(newProfile, { onConflict: 'id' });
+            profile = newProfile;
           }
+
+          onAuthComplete(data.user, profile);
+          return;
         }
       }
     } catch (err: any) {
