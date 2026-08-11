@@ -24,12 +24,13 @@ export function calculateDistanceKm(
 
 // Static fallback city coordinates for popular cities
 const POPULAR_CITIES: Record<string, { lat: number; lng: number }> = {
+  'ahmedabad': { lat: 23.0225, lng: 72.5714 },
+  'santo domingo': { lat: 18.4861, lng: -69.9312 },
   'new york': { lat: 40.7128, lng: -74.006 },
   'london': { lat: 51.5074, lng: -0.1278 },
   'paris': { lat: 48.8566, lng: 2.3522 },
   'madrid': { lat: 40.4168, lng: -3.7038 },
   'tokyo': { lat: 35.6762, lng: 139.6503 },
-  'santo domingo': { lat: 18.4861, lng: -69.9312 },
   'kolkata': { lat: 22.5726, lng: 88.3639 },
   'mumbai': { lat: 19.076, lng: 72.8777 },
   'delhi': { lat: 28.6139, lng: 77.209 },
@@ -50,7 +51,6 @@ export function getCityCoordinates(cityName: string): { lat: number; lng: number
   if (POPULAR_CITIES[normalized]) {
     return POPULAR_CITIES[normalized];
   }
-  // Generate deterministic pseudo-coordinates based on string hash if not in dictionary
   let hash = 0;
   for (let i = 0; i < cityName.length; i++) {
     hash = (hash << 5) - hash + cityName.charCodeAt(i);
@@ -65,10 +65,10 @@ export function getCityCoordinates(cityName: string): { lat: number; lng: number
 export function getCountryFlag(countryName?: string | null): string {
   if (!countryName) return '🌐';
   const c = countryName.toLowerCase().trim();
-  if (c.includes('spain') || c.includes('españa') || c === 'es') return '🇪🇸';
-  if (c.includes('united states') || c.includes('usa') || c.includes('us') || c.includes('eeuu')) return '🇺🇸';
   if (c.includes('dominican') || c === 'do') return '🇩🇴';
   if (c.includes('india') || c === 'in') return '🇮🇳';
+  if (c.includes('spain') || c.includes('españa') || c === 'es') return '🇪🇸';
+  if (c.includes('united states') || c.includes('usa') || c.includes('us') || c.includes('eeuu')) return '🇺🇸';
   if (c.includes('mexico') || c.includes('méxico') || c === 'mx') return '🇲🇽';
   if (c.includes('colombia') || c === 'co') return '🇨🇴';
   if (c.includes('argentina') || c === 'ar') return '🇦🇷';

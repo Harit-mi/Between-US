@@ -14,31 +14,31 @@ import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucid
 export function App() {
   const { t, i18n } = useTranslation();
 
-  // Instant default user & partner profiles
+  // Updated Profile Location: You in Ahmedabad, India 🇮🇳 | Her in Santo Domingo, Dominican Republic 🇩🇴
   const defaultUser = { id: 'user-hitansh-123', email: 'hitansh@betweenus.app' };
   const defaultProfile = {
     id: 'user-hitansh-123',
     name: 'Hitansh',
     nickname: 'Amor',
     country: 'India',
-    city: 'Kolkata',
-    latitude: 22.5726,
-    longitude: 88.3639,
+    city: 'Ahmedabad',
+    latitude: 23.0225,
+    longitude: 72.5714,
     language: 'en',
-    timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Kolkata',
+    timezone: 'Asia/Kolkata',
     status: 'available',
   };
 
   const defaultPartner = {
-    id: 'partner-maria-456',
-    name: 'Maria',
+    id: 'partner-amor-456',
+    name: 'Amor',
     nickname: 'Mi Amor',
-    country: 'Spain',
-    city: 'Madrid',
-    latitude: 40.4168,
-    longitude: -3.7038,
+    country: 'Dominican Republic',
+    city: 'Santo Domingo',
+    latitude: 18.4861,
+    longitude: -69.9312,
     language: 'es',
-    timezone: 'Europe/Madrid',
+    timezone: 'America/Santo_Domingo',
     status: 'thinking',
   };
 
@@ -47,7 +47,7 @@ export function App() {
     couple_code: 'LOVE26',
   };
 
-  // App state with instant defaults
+  // App state
   const [currentUser] = useState<any>(defaultUser);
   const [userProfile, setUserProfile] = useState<any>(defaultProfile);
   const [partnerProfile] = useState<any>(defaultPartner);
@@ -56,7 +56,7 @@ export function App() {
   const [touches, setTouches] = useState<any[]>([
     {
       id: 't-1',
-      sender_id: 'partner-maria-456',
+      sender_id: 'partner-amor-456',
       emoji: '🤗',
       name: 'Hug',
       created_at: new Date(Date.now() - 120000).toISOString(),
