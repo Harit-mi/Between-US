@@ -58,17 +58,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
         });
         if (signUpErr) throw signUpErr;
 
+        if (data.session) {
+          await supabase.auth.setSession(data.session);
+        }
+
         if (data.user) {
           setCurrentUser(data.user);
           setStep('profile');
         }
       } else {
+        // LOG IN FLOW
         const { data, error: signInErr } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (signInErr) throw signInErr;
-        if (data.user) {
+
+        if (data.session && data.user) {
+          // Explicitly set the session so Authorization headers are attached immediately
+          await supabase.auth.setSession(data.session);
+
+          // Fetch profile with authenticated session headers
           const { data: profile } = await supabase
             .from('users')
             .select('*')
@@ -77,6 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
 
           if (profile && profile.name) {
             onAuthComplete(data.user, profile);
+            return;
           } else {
             setCurrentUser(data.user);
             setStep('profile');
