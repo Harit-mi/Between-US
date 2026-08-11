@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles } from 'lucide-react';
+import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, Tv, Play, Pause } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface RadioViewProps {
@@ -10,20 +10,22 @@ interface RadioViewProps {
 export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(true);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // Pre-loaded popular romantic tracks & live streams
   const [playlist, setPlaylist] = useState<any[]>([
-    {
-      title: 'Lofi Chill Beats 24/7',
-      artist: 'Free Live Radio',
-      youtubeId: 'jfKfPfyJRdk',
-      cover: '☕',
-    },
     {
       title: 'Perfect - Ed Sheeran',
       artist: 'Romantic Special',
       youtubeId: '2Vv-BfVoq4g',
       cover: '🌹',
+    },
+    {
+      title: 'Lofi Chill Beats 24/7',
+      artist: 'Free Live Radio',
+      youtubeId: 'jfKfPfyJRdk',
+      cover: '☕',
     },
     {
       title: 'Golden Hour - JVKE',
@@ -52,7 +54,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
     if (!inputUrl.trim() && !inputTitle.trim()) return;
 
     triggerHaptic([40, 40]);
-    const ytId = extractYouTubeId(inputUrl) || 'jfKfPfyJRdk';
+    const ytId = extractYouTubeId(inputUrl) || '2Vv-BfVoq4g';
     const title = inputTitle.trim() || (ytId ? 'Custom YouTube Song' : 'Our Song');
 
     const newTrack = {
@@ -64,6 +66,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
     setPlaylist((prev) => [newTrack, ...prev]);
     setCurrentTrackIndex(0);
+    setIsPlayingAudio(true);
     setInputUrl('');
     setInputTitle('');
   };
@@ -117,31 +120,72 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
       </form>
 
       {/* Main Interactive Music Player Card */}
-      <div className="glass-card rounded-3xl p-5 border border-white/10 w-full flex flex-col items-center justify-center space-y-4 shadow-2xl relative overflow-hidden">
-        {/* Track Title */}
-        <div className="text-center space-y-1">
-          <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2.5 py-0.5 rounded-full font-medium">
-            <Volume2 className="w-3 h-3 text-pink-400" />
-            <span>Now Playing</span>
+      <div className="glass-card rounded-3xl p-4 border border-white/10 w-full flex flex-col items-center justify-center space-y-3 shadow-2xl relative overflow-hidden">
+        {/* Track Title & Mode Toggle */}
+        <div className="w-full flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="text-left space-y-0.5 max-w-[240px]">
+            <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">
+              <Volume2 className="w-3 h-3 text-pink-400" />
+              <span>Now Playing</span>
+            </div>
+            <h2 className="text-sm font-bold text-white tracking-tight truncate">{currentTrack.title}</h2>
+            <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
           </div>
-          <h2 className="text-base font-bold text-white tracking-tight">{currentTrack.title}</h2>
-          <p className="text-xs text-slate-400">{currentTrack.artist}</p>
+
+          <button
+            onClick={() => {
+              triggerHaptic(30);
+              setShowVideo(!showVideo);
+            }}
+            className="glass-pill px-3 py-1.5 rounded-xl text-xs text-pink-300 hover:text-white flex items-center gap-1.5 border border-white/10 transition"
+          >
+            <Tv className="w-3.5 h-3.5 text-pink-400" />
+            <span>{showVideo ? 'Compact View' : 'Video View'}</span>
+          </button>
         </div>
 
-        {/* Embedded Interactive YouTube Audio Player (Tappable for audio!) */}
-        <div className="w-full rounded-2xl overflow-hidden aspect-video bg-black border border-white/15 shadow-xl relative">
-          <iframe
-            src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
-            title={currentTrack.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full"
-          />
-        </div>
+        {/* Video / Audio Player Display */}
+        {showVideo ? (
+          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-44 bg-black border border-white/15 shadow-xl relative">
+            <iframe
+              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+              title={currentTrack.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="py-4 flex flex-col items-center space-y-3">
+            <div className="relative w-28 h-28 flex items-center justify-center">
+              <div
+                className={`w-28 h-28 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center shadow-2xl transition-transform duration-1000 ${
+                  isPlayingAudio ? 'animate-spin' : ''
+                }`}
+                style={{ animationDuration: '6s' }}
+              >
+                <div className="w-12 h-12 rounded-full gradient-accent-bg flex items-center justify-center text-xl shadow-inner">
+                  {currentTrack.cover || '🌹'}
+                </div>
+                <div className="absolute w-3 h-3 rounded-full bg-slate-950 border border-white/20" />
+              </div>
+            </div>
 
-        <div className="flex items-center gap-2 text-[11px] text-slate-400 bg-white/5 px-3 py-1 rounded-full">
-          <Disc className="w-3.5 h-3.5 text-pink-400 animate-spin" />
-          <span>Tap video controls above to adjust volume</span>
+            <button
+              onClick={() => {
+                triggerHaptic(50);
+                setIsPlayingAudio(!isPlayingAudio);
+              }}
+              className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center text-white shadow-lg shadow-pink-500/25 active:scale-95 transition"
+            >
+              {isPlayingAudio ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
+            </button>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 text-[10px] text-slate-400 bg-white/5 px-3 py-1 rounded-full">
+          <Disc className="w-3 h-3 text-pink-400 animate-spin" />
+          <span>Synced playback with {partnerName || 'Partner'}</span>
         </div>
       </div>
 
@@ -163,6 +207,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
                 onClick={() => {
                   triggerHaptic(40);
                   setCurrentTrackIndex(idx);
+                  setIsPlayingAudio(true);
                 }}
                 className={`w-full p-2.5 rounded-2xl flex items-center justify-between text-xs transition ${
                   isActive
