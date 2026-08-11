@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Plus, Heart, Sparkles, Calendar } from 'lucide-react';
+import { Image as ImageIcon, Plus, Heart, Sparkles, Calendar, X } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface MemoriesViewProps {
@@ -9,44 +9,26 @@ interface MemoriesViewProps {
 
 export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
-  const [memories, setMemories] = useState<any[]>([
-    {
-      id: 'mem-1',
-      title: 'Our First Sunset Together 🌅',
-      date: 'Aug 1, 2026',
-      image: 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?auto=format&fit=crop&w=600&q=80',
-      caption: 'Unforgettable evening watching the sun go down over the horizon.',
-      likes: 2,
-    },
-    {
-      id: 'mem-2',
-      title: 'Coffee Date & Long Talks ☕',
-      date: 'Jul 24, 2026',
-      image: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80',
-      caption: 'Hours flew by like minutes. Best coffee date ever.',
-      likes: 4,
-    },
-  ]);
+  // Starts with clean empty memories list
+  const [memories, setMemories] = useState<any[]>([]);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCaption, setNewCaption] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   const handleAddMemory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
     triggerHaptic([40, 40]);
-    const mockImages = [
-      'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80',
-    ];
+    const fallbackImage = 'https://images.unsplash.com/photo-1518173946687-a4c8a383392e?auto=format&fit=crop&w=600&q=80';
 
     const newMem = {
       id: 'mem-' + Date.now(),
       title: newTitle.trim(),
-      date: 'Today',
-      image: mockImages[Math.floor(Math.random() * mockImages.length)],
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      image: newImageUrl.trim() || fallbackImage,
       caption: newCaption.trim() || 'A special moment saved forever ❤️',
       likes: 1,
     };
@@ -54,6 +36,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
     setMemories((prev) => [newMem, ...prev]);
     setNewTitle('');
     setNewCaption('');
+    setNewImageUrl('');
     setIsAdding(false);
   };
 
@@ -66,15 +49,15 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
             <Sparkles className="w-4 h-4 text-pink-400" />
             <span>{t('memories.title')}</span>
           </h2>
-          <p className="text-[11px] text-slate-400">Captured moments with {partnerName}</p>
+          <p className="text-[11px] text-slate-400">Shared album with {partnerName || 'Partner'}</p>
         </div>
 
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="py-2 px-3 rounded-xl gradient-accent-bg text-white text-xs font-semibold shadow-md shadow-pink-500/20 flex items-center gap-1.5 active:scale-95 transition"
         >
-          <Plus className="w-4 h-4" />
-          <span>{t('memories.add_memory')}</span>
+          {isAdding ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          <span>{isAdding ? 'Close' : t('memories.add_memory')}</span>
         </button>
       </div>
 
@@ -88,7 +71,15 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
             required
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Memory title (e.g. Stargazing Night)"
+            placeholder="Memory title (e.g. Our First Date)"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-pink-500"
+          />
+
+          <input
+            type="url"
+            value={newImageUrl}
+            onChange={(e) => setNewImageUrl(e.target.value)}
+            placeholder="Photo URL (optional - e.g. https://...)"
             className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-pink-500"
           />
 
@@ -121,9 +112,10 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
       {/* Memories Feed */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
         {memories.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
-            <Image className="w-8 h-8 text-slate-600" />
-            <p>{t('memories.empty')}</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
+            <ImageIcon className="w-8 h-8 text-slate-600" />
+            <p className="font-medium text-center">{t('memories.empty')}</p>
+            <span className="text-[10px] text-slate-600">Tap "+ Add Memory" above to create your photo album</span>
           </div>
         ) : (
           memories.map((mem) => (

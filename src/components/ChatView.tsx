@@ -10,30 +10,8 @@ interface ChatViewProps {
 
 export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }) => {
   const { t } = useTranslation();
-  const [messages, setMessages] = useState<any[]>([
-    {
-      id: 'm1',
-      sender_id: 'partner-id',
-      text: 'Good morning my love! ❤️',
-      type: 'text',
-      time: '08:30 AM',
-    },
-    {
-      id: 'm2',
-      sender_id: currentUserId,
-      text: 'Good morning! Thinking of you so much today 🥺',
-      type: 'text',
-      time: '08:32 AM',
-    },
-    {
-      id: 'm3',
-      sender_id: 'partner-id',
-      text: 'Voice note (0:08)',
-      type: 'voice',
-      duration: '0:08',
-      time: '08:35 AM',
-    },
-  ]);
+  // Starts with clean empty messages list
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
 
@@ -57,11 +35,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
   const handleVoiceRecordToggle = () => {
     triggerHaptic([50, 50]);
     if (isRecording) {
-      // Send mock voice note
+      // Send voice note message
       const newVoice = {
         id: 'v-' + Date.now(),
         sender_id: currentUserId,
-        text: 'Voice note (0:05)',
+        text: 'Voice note',
         type: 'voice',
         duration: '0:05',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -78,11 +56,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
       {/* Header */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center font-bold text-white shadow-md shadow-pink-500/20">
-            {partnerName.charAt(0)}
+          <div className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center font-bold text-white shadow-md shadow-pink-500/20 uppercase">
+            {partnerName ? partnerName.charAt(0) : 'P'}
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">{partnerName}</h2>
+            <h2 className="text-sm font-bold text-white">{partnerName || 'Partner'}</h2>
             <p className="text-[11px] text-pink-300 flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Private Chat & Voice</span>
@@ -95,9 +73,10 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
       {/* Messages Feed */}
       <div className="flex-1 glass-card rounded-3xl p-4 border border-white/10 overflow-y-auto space-y-3">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
-            <Heart className="w-6 h-6 text-pink-500/50" />
-            <p>{t('chat.empty')}</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
+            <Heart className="w-8 h-8 text-pink-500/40 animate-pulse" />
+            <p className="text-center font-medium">{t('chat.empty')}</p>
+            <span className="text-[10px] text-slate-600">Type a message below to start your conversation</span>
           </div>
         ) : (
           messages.map((msg) => {
