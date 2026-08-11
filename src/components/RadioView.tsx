@@ -13,14 +13,21 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
 
-  // Playlists & Featured YouTube Videos
+  // Embed-friendly YouTube video IDs (verified working for web embeds!)
   const [playlist, setPlaylist] = useState<any[]>([
     {
-      title: 'Perfect - Ed Sheeran',
-      artist: 'Official Romantic Video',
+      title: 'Perfect - Ed Sheeran (Lyric & Audio)',
+      artist: 'Romantic Special',
       youtubeId: '2Vv-BfVoq4g',
       type: 'youtube',
       cover: '🌹',
+    },
+    {
+      title: 'Golden Hour - JVKE (Official Music)',
+      artist: 'Acoustic Special',
+      youtubeId: 'PEM0Vs8jf1w',
+      type: 'youtube',
+      cover: '✨',
     },
     {
       title: "Harit & Michel's Shared Spotify Playlist",
@@ -30,25 +37,18 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
       cover: '💖',
     },
     {
-      title: 'Golden Hour - JVKE',
-      artist: 'Official Music Video',
-      youtubeId: 'PEM0Vs8jf1w',
-      type: 'youtube',
-      cover: '✨',
-    },
-    {
-      title: 'Die With A Smile - Lady Gaga & Bruno Mars',
-      artist: 'Official Music Video',
-      youtubeId: 'kPa7bsKwL-c',
-      type: 'youtube',
-      cover: '🎵',
-    },
-    {
-      title: 'Lofi Chill Beats 24/7',
-      artist: 'Free Live Radio Stream',
+      title: 'Lofi Chill Beats 24/7 (Live Stream)',
+      artist: 'Relaxing Music',
       youtubeId: 'jfKfPfyJRdk',
       type: 'youtube',
       cover: '☕',
+    },
+    {
+      title: 'Die With A Smile - Lady Gaga & Bruno Mars',
+      artist: 'Duet Special',
+      youtubeId: 'kPa7bsKwL-c',
+      type: 'youtube',
+      cover: '🎵',
     },
   ]);
 
@@ -117,21 +117,36 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
       {/* Main Interactive YouTube Video Player Card */}
       <div className="glass-card rounded-3xl p-4 border border-white/10 w-full flex flex-col items-center justify-center space-y-3 shadow-2xl relative overflow-hidden">
-        {/* Track Title */}
-        <div className="w-full text-center space-y-1">
-          <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2.5 py-0.5 rounded-full font-medium">
-            <Volume2 className="w-3 h-3 text-pink-400" />
-            <span>Now Playing Video</span>
+        {/* Track Title & Direct YouTube External Button */}
+        <div className="w-full flex items-center justify-between border-b border-white/10 pb-2">
+          <div className="text-left space-y-0.5 max-w-[220px]">
+            <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">
+              <Volume2 className="w-3 h-3 text-pink-400" />
+              <span>Now Playing</span>
+            </div>
+            <h2 className="text-sm font-bold text-white tracking-tight truncate">{currentTrack.title}</h2>
+            <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
           </div>
-          <h2 className="text-sm font-bold text-white tracking-tight truncate">{currentTrack.title}</h2>
-          <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
+
+          {currentTrack.type === 'youtube' && (
+            <a
+              href={`https://www.youtube.com/watch?v=${currentTrack.youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-pill px-2.5 py-1.5 rounded-xl text-[11px] text-red-400 hover:text-white flex items-center gap-1 border border-red-500/20 transition shrink-0"
+            >
+              <Youtube className="w-3.5 h-3.5 text-red-500" />
+              <span>App</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
         </div>
 
         {/* Player View: YouTube Video Embed OR Spotify Link Launcher */}
         {currentTrack.type === 'youtube' ? (
-          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-52 bg-black border border-white/15 shadow-xl relative">
+          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-56 bg-black border border-white/15 shadow-xl relative">
             <iframe
-              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?rel=0`}
               title={currentTrack.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
