@@ -16,8 +16,8 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   // Pre-loaded playlists: Includes Harit & Michel's Spotify Playlist + Romantic Classics
   const [playlist, setPlaylist] = useState<any[]>([
     {
-      title: "Harit & Michel's Shared Playlist",
-      artist: 'Spotify Special Collection',
+      title: "Harit & Michel's Spotify Playlist",
+      artist: 'Harit & Michel • Shared Collection',
       spotifyId: '52Fiun5SvbLRCHBpPyitEa',
       type: 'spotify_playlist',
       cover: '💖',
@@ -137,7 +137,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           type="text"
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
-          placeholder="Paste Spotify Playlist/Track link or YouTube URL..."
+          placeholder="Paste Spotify Playlist link or YouTube URL..."
           className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
         />
 
@@ -185,17 +185,16 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           </button>
         </div>
 
-        {/* Player View: Spotify Embed OR YouTube Embed OR Vinyl View */}
+        {/* Player View: Spotify Embed (Height 352px for full playlist player!) OR YouTube Embed OR Vinyl View */}
         {showVideo ? (
           currentTrack.type === 'spotify_playlist' || currentTrack.type === 'spotify_track' ? (
-            <div className="w-full rounded-2xl overflow-hidden min-h-[152px] bg-black border border-white/15 shadow-xl relative">
+            <div className="w-full rounded-2xl overflow-hidden min-h-[352px] bg-black border border-emerald-500/30 shadow-xl relative">
               <iframe
                 src={`https://open.spotify.com/embed/${currentTrack.type === 'spotify_playlist' ? 'playlist' : 'track'}/${currentTrack.spotifyId}?utm_source=generator&theme=0`}
                 width="100%"
-                height="152"
+                height="352"
                 frameBorder="0"
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
                 className="w-full rounded-2xl"
               />
             </div>
@@ -244,16 +243,16 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
         </div>
       </div>
 
-      {/* Shared Playlist List */}
+      {/* Shared Playlist Selector */}
       <div className="w-full glass-card rounded-3xl p-4 border border-white/10 space-y-2">
         <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Our Playlist ({playlist.length})
+            Our Playlists & Tracks ({playlist.length})
           </span>
           <Music className="w-3.5 h-3.5 text-pink-400" />
         </div>
 
-        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+        <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {playlist.map((track, idx) => {
             const isActive = idx === currentTrackIndex;
             return (
