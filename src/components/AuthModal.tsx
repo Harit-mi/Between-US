@@ -58,24 +58,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
         });
         if (signUpErr) throw signUpErr;
 
-        // If auto-confirm is enabled or session exists
-        if (data.session && data.user) {
+        if (data.user) {
           setCurrentUser(data.user);
           setStep('profile');
-        } else {
-          // Attempt instant sign-in in case email confirm is disabled
-          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (!signInErr && signInData.user) {
-            setCurrentUser(signInData.user);
-            setStep('profile');
-          } else {
-            // Email confirmation required in Supabase dashboard
-            setError('Account created! Please check your email to confirm your account, or disable "Confirm Email" in Supabase Auth settings.');
-          }
         }
       } else {
         const { data, error: signInErr } = await supabase.auth.signInWithPassword({
@@ -88,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
             .from('users')
             .select('*')
             .eq('id', data.user.id)
-            .single();
+            .maybeSingle();
 
           if (profile && profile.name) {
             onAuthComplete(data.user, profile);
@@ -109,6 +94,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
+    setError(null);
 
     const coords = getCityCoordinates(city);
     const profileData = {
@@ -126,10 +112,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onAuthComplete }) => {
 
     if (isSupabaseConfigured && currentUser?.id) {
       try {
-        const { error: upsertErr } = await supabase.from('users').upsert(profileData);
-        if (upsertErr) console.warn('Supabase profile save error:', upsertErr);
-      } catch (err) {
-        console.warn('Profile save exception:', err);
+        const { error: upsertErr } = await supabase.from('users').upsert(profileData, { onConflict: 'id' });
+        if (upsertErr) {
+          console.error('Supabase profile save error:', upsertErr);
+          setError(upsertErr.message);
+          setLoading(false);
+          return;
+        }
+      } catch (err: any) {
+        console.error('Profile save exception:', err);
+        setError(err.message || 'Error saving profile');
+        setLoading(false);
+        return;
       }
     }
 
