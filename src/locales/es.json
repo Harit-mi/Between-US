@@ -4,6 +4,13 @@
     "subtitle": "Nuestro Mundo Privado",
     "tagline": "Dos corazones, un mismo espacio."
   },
+  "nav": {
+    "touches": "Toques",
+    "chat": "Chat y Voz",
+    "radio": "Radio",
+    "memories": "Recuerdos",
+    "stats": "Nuestra Historia"
+  },
   "auth": {
     "welcome": "Bienvenido a Entre Nosotros",
     "subheading": "Tu espacio íntimo y privado para dos.",
@@ -71,6 +78,33 @@
     "sent_hug": "te envió un abrazo 🤗",
     "sent_kiss": "te envió un beso 💋",
     "misses_you": "te extraña 🥺"
+  },
+  "chat": {
+    "title": "Chat Privado",
+    "placeholder": "Escribe un mensaje...",
+    "record_voice": "Mantén presionado para grabar nota de voz",
+    "recording": "Grabando... toca para enviar",
+    "empty": "No hay mensajes aún. ¡Saluda a tu amor!"
+  },
+  "radio": {
+    "title": "Nuestra Radio 📻",
+    "now_playing": "Reproductor Sincronizado",
+    "select_track": "Lista de Reproducción",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "sync_msg": "¡Reproducción sincronizada en tiempo real!"
+  },
+  "memories": {
+    "title": "Nuestros Recuerdos 📸",
+    "add_memory": "Agregar Recuerdo",
+    "empty": "No hay recuerdos compartidos aún. ¡Sube tus momentos especiales!",
+    "caption_placeholder": "Escribe una descripción..."
+  },
+  "stats": {
+    "title": "Nuestra Historia 💖",
+    "days_together": "Días Juntos",
+    "total_touches": "Total de Toques Enviados",
+    "first_met": "Fecha Especial"
   },
   "settings": {
     "title": "Ajustes",

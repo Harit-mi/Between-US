@@ -4,6 +4,13 @@
     "subtitle": "Our Private World",
     "tagline": "Two hearts, one shared space."
   },
+  "nav": {
+    "touches": "Touches",
+    "chat": "Chat & Voice",
+    "radio": "Our Radio",
+    "memories": "Memories",
+    "stats": "Our Story"
+  },
   "auth": {
     "welcome": "Welcome to Between Us",
     "subheading": "Your private, intimate space for two.",
@@ -71,6 +78,33 @@
     "sent_hug": "sent you a hug 🤗",
     "sent_kiss": "sent you a kiss 💋",
     "misses_you": "misses you 🥺"
+  },
+  "chat": {
+    "title": "Private Chat",
+    "placeholder": "Type a message...",
+    "record_voice": "Hold to record voice note",
+    "recording": "Recording... tap to send",
+    "empty": "No messages yet. Say hi to your love!"
+  },
+  "radio": {
+    "title": "Our Radio 📻",
+    "now_playing": "Synced Music Player",
+    "select_track": "Shared Playlist",
+    "play": "Play",
+    "pause": "Pause",
+    "sync_msg": "Playback synced between both phones in real-time!"
+  },
+  "memories": {
+    "title": "Our Memories 📸",
+    "add_memory": "Add Memory",
+    "empty": "No shared memories yet. Upload your special moments!",
+    "caption_placeholder": "Write a caption..."
+  },
+  "stats": {
+    "title": "Our Story & Milestones 💖",
+    "days_together": "Days Together",
+    "total_touches": "Total Touches Sent",
+    "first_met": "Special Date"
   },
   "settings": {
     "title": "Settings",

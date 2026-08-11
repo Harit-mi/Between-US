@@ -4,9 +4,14 @@ import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { AuthModal } from './components/AuthModal';
 import { PairingView } from './components/PairingView';
 import { HomeView } from './components/HomeView';
+import { ChatView } from './components/ChatView';
+import { RadioView } from './components/RadioView';
+import { MemoriesView } from './components/MemoriesView';
+import { StatsView } from './components/StatsView';
 import { TouchOverlay } from './components/TouchOverlay';
 import { SettingsModal } from './components/SettingsModal';
 import { triggerHaptic, sendBrowserNotification } from './lib/vibration';
+import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucide-react';
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -17,6 +22,9 @@ export function App() {
   const [partnerProfile, setPartnerProfile] = useState<any>(null);
   const [coupleData, setCoupleData] = useState<any>(null);
   const [touches, setTouches] = useState<any[]>([]);
+
+  // Navigation state (touches | chat | radio | memories | stats)
+  const [activeTab, setActiveTab] = useState<'touches' | 'chat' | 'radio' | 'memories' | 'stats'>('touches');
 
   // Modals & overlay state
   const [incomingTouch, setIncomingTouch] = useState<any | null>(null);
@@ -108,7 +116,7 @@ export function App() {
     }
   };
 
-  // 3. Supabase Realtime subscription on `touches` table for couple_id
+  // 3. Supabase Realtime subscription on `touches` table
   useEffect(() => {
     if (!isSupabaseConfigured || !coupleData?.id) return;
 
@@ -125,7 +133,6 @@ export function App() {
         async (payload) => {
           const newTouch = payload.new;
 
-          // Fetch touch_type details for translation
           let touchType = null;
           if (newTouch.touch_type_id) {
             const { data } = await supabase.from('touch_types').select('*').eq('id', newTouch.touch_type_id).single();
@@ -133,11 +140,8 @@ export function App() {
           }
 
           const fullTouch = { ...newTouch, touch_type: touchType };
-
-          // Add to touch history feed
           setTouches((prev) => [fullTouch, ...prev]);
 
-          // If sent by partner, trigger overlay & push notification
           if (newTouch.sender_id !== userProfile?.id) {
             triggerHaptic([100, 50, 100, 50, 100]);
 
@@ -153,7 +157,6 @@ export function App() {
               typeEs,
             });
 
-            // Fire browser push notification in receiver's language
             const notifText = i18n.language === 'es' ? `${senderName} te envió ${emoji}` : `${senderName} sent you ${emoji}`;
             sendBrowserNotification('Between Us ❤️', notifText, emoji);
           }
@@ -166,12 +169,10 @@ export function App() {
     };
   }, [coupleData?.id, userProfile?.id, partnerProfile, i18n.language]);
 
-  // Handle auth completion
   const handleAuthComplete = (user: any, profile: any) => {
     setCurrentUser(user);
     setUserProfile(profile);
 
-    // If demo mode, set up mock partner & couple
     if (!isSupabaseConfigured) {
       setCoupleData({ id: 'demo-couple-123', couple_code: 'X7K92M' });
       setPartnerProfile({
@@ -204,7 +205,6 @@ export function App() {
     }
   };
 
-  // Handle send touch click
   const handleSendTouch = async (touchOption: { emoji: string; name_en: string; name_es: string }) => {
     if (!userProfile) return;
 
@@ -223,7 +223,6 @@ export function App() {
 
     if (isSupabaseConfigured && partnerProfile?.id && coupleData?.id) {
       try {
-        // Find matching touch_type_id
         const { data: touchTypes } = await supabase
           .from('touch_types')
           .select('id')
@@ -243,7 +242,6 @@ export function App() {
     }
   };
 
-  // Handle pairing completion
   const handlePairingComplete = (couple: any) => {
     setCoupleData(couple);
     if (!isSupabaseConfigured) {
@@ -280,21 +278,114 @@ export function App() {
     );
   }
 
+  const partnerName = partnerProfile?.nickname || partnerProfile?.name || 'Partner';
+  const userName = userProfile?.nickname || userProfile?.name || 'You';
+
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-slate-100 font-sans">
+    <div className="min-h-screen bg-[#0a0a0f] text-slate-100 font-sans relative pb-20">
       {!currentUser || !userProfile ? (
         <AuthModal onAuthComplete={handleAuthComplete} />
       ) : !coupleData ? (
         <PairingView userProfile={userProfile} onPairingComplete={handlePairingComplete} />
       ) : (
-        <HomeView
-          userProfile={userProfile}
-          partnerProfile={partnerProfile}
-          coupleCode={coupleData?.couple_code}
-          touches={touches}
-          onSendTouch={handleSendTouch}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-        />
+        <>
+          {activeTab === 'touches' && (
+            <HomeView
+              userProfile={userProfile}
+              partnerProfile={partnerProfile}
+              coupleCode={coupleData?.couple_code}
+              touches={touches}
+              onSendTouch={handleSendTouch}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+            />
+          )}
+
+          {activeTab === 'chat' && (
+            <ChatView currentUserId={userProfile.id} partnerName={partnerName} />
+          )}
+
+          {activeTab === 'radio' && (
+            <RadioView partnerName={partnerName} />
+          )}
+
+          {activeTab === 'memories' && (
+            <MemoriesView partnerName={partnerName} />
+          )}
+
+          {activeTab === 'stats' && (
+            <StatsView partnerName={partnerName} userName={userName} totalTouches={touches.length} />
+          )}
+
+          {/* Bottom Fixed Navigation Bar */}
+          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-white/10 safe-area-pb">
+            <div className="max-w-md mx-auto flex items-center justify-around py-2 px-2">
+              <button
+                onClick={() => {
+                  triggerHaptic(30);
+                  setActiveTab('touches');
+                }}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition ${
+                  activeTab === 'touches' ? 'text-pink-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${activeTab === 'touches' ? 'fill-pink-500' : ''}`} />
+                <span className="text-[10px]">{t('nav.touches')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHaptic(30);
+                  setActiveTab('chat');
+                }}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition ${
+                  activeTab === 'chat' ? 'text-pink-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <MessageCircle className={`w-5 h-5 ${activeTab === 'chat' ? 'fill-pink-500' : ''}`} />
+                <span className="text-[10px]">{t('nav.chat')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHaptic(30);
+                  setActiveTab('radio');
+                }}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition ${
+                  activeTab === 'radio' ? 'text-pink-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <RadioIcon className="w-5 h-5" />
+                <span className="text-[10px]">{t('nav.radio')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHaptic(30);
+                  setActiveTab('memories');
+                }}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition ${
+                  activeTab === 'memories' ? 'text-pink-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <Image className="w-5 h-5" />
+                <span className="text-[10px]">{t('nav.memories')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  triggerHaptic(30);
+                  setActiveTab('stats');
+                }}
+                className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition ${
+                  activeTab === 'stats' ? 'text-pink-400 font-bold scale-105' : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <Sparkles className="w-5 h-5" />
+                <span className="text-[10px]">{t('nav.stats')}</span>
+              </button>
+            </div>
+          </nav>
+        </>
       )}
 
       {/* Realtime Touch Overlay */}
