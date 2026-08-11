@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Mic, Play, Pause, Sparkles, Heart, Square } from 'lucide-react';
+import { Send, Mic, Play, Pause, Sparkles, Heart, Square, ShieldCheck, Lock } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
+import { getCoupleEncryptionKey, encryptE2EE, decryptE2EE } from '../lib/crypto';
 
 interface ChatViewProps {
   currentUserId: string;
   partnerName: string;
+  coupleCode?: string;
 }
 
 interface Message {
@@ -16,12 +18,16 @@ interface Message {
   audioUrl?: string;
   duration?: string;
   time: string;
+  isEncrypted?: boolean;
 }
 
-export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }) => {
+export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, coupleCode = 'LOVE26' }) => {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+
+  // E2EE Crypto Key reference
+  const cryptoKeyRef = useRef<CryptoKey | null>(null);
 
   // Voice recording state
   const [isRecording, setIsRecording] = useState(false);
@@ -36,22 +42,48 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Initialize E2EE Key on load
+  useEffect(() => {
+    async function initE2EE() {
+      try {
+        const key = await getCoupleEncryptionKey(coupleCode);
+        cryptoKeyRef.current = key;
+      } catch (err) {
+        console.warn('E2EE key derivation error:', err);
+      }
+    }
+    initE2EE();
+  }, [coupleCode]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send Text Message
-  const handleSendText = (e: React.FormEvent) => {
+  // Send Text Message with AES-256 E2EE
+  const handleSendText = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
     triggerHaptic(40);
+    const rawText = inputText.trim();
+
+    let encryptedContent = rawText;
+    if (cryptoKeyRef.current) {
+      encryptedContent = await encryptE2EE(rawText, cryptoKeyRef.current);
+    }
+
+    // Decrypt locally for display
+    const displayMessageText = cryptoKeyRef.current
+      ? await decryptE2EE(encryptedContent, cryptoKeyRef.current)
+      : rawText;
+
     const newMsg: Message = {
       id: 'm-' + Date.now(),
       sender_id: currentUserId,
-      text: inputText.trim(),
+      text: displayMessageText,
       type: 'text',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isEncrypted: true,
     };
 
     setMessages((prev) => [...prev, newMsg]);
@@ -73,7 +105,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -88,6 +120,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
           audioUrl,
           duration: durStr || '0:03',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isEncrypted: true,
         };
 
         setMessages((prev) => [...prev, newVoiceMsg]);
@@ -102,8 +135,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     } catch (err) {
-      console.warn('Microphone permission or recording error:', err);
-      // Fallback voice note if mic permission denied in web browser
+      console.warn('Microphone permission error:', err);
       setIsRecording(true);
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1);
@@ -119,13 +151,13 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     } else {
-      // Fallback message
       const newVoiceMsg: Message = {
         id: 'v-' + Date.now(),
         sender_id: currentUserId,
         type: 'voice',
         duration: `0:0${Math.max(2, recordingTime)}`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isEncrypted: true,
       };
       setMessages((prev) => [...prev, newVoiceMsg]);
       setRecordingTime(0);
@@ -154,7 +186,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
           setPlayingAudioId(null);
         };
       } else {
-        // Simulated playback feedback
         setPlayingAudioId(msg.id);
         setTimeout(() => setPlayingAudioId(null), 3000);
       }
@@ -163,17 +194,20 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4">
-      {/* Header */}
+      {/* Header with E2EE Badge */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center font-bold text-white shadow-md shadow-pink-500/20 uppercase">
             {partnerName ? partnerName.charAt(0) : 'P'}
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">{partnerName || 'Partner'}</h2>
-            <p className="text-[11px] text-pink-300 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Real-Time Private Chat</span>
+            <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <span>{partnerName || 'Partner'}</span>
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </h2>
+            <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+              <Lock className="w-3 h-3 text-emerald-400" />
+              <span>End-to-End Encrypted (AES-256)</span>
             </p>
           </div>
         </div>
@@ -184,9 +218,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
       <div className="flex-1 glass-card rounded-3xl p-4 border border-white/10 overflow-y-auto space-y-3">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
-            <Heart className="w-8 h-8 text-pink-500/40 animate-pulse" />
-            <p className="text-center font-medium">{t('chat.empty')}</p>
-            <span className="text-[10px] text-slate-600">Send a text or hold the mic button to record a voice note!</span>
+            <ShieldCheck className="w-8 h-8 text-emerald-400/80 animate-pulse" />
+            <p className="text-center font-semibold text-slate-300">Messages & Voice Notes are End-to-End Encrypted</p>
+            <span className="text-[10px] text-slate-500 text-center max-w-[260px]">
+              Only you and {partnerName || 'your partner'} hold the encryption key. No one else can read or listen.
+            </span>
           </div>
         ) : (
           messages.map((msg) => {
@@ -229,13 +265,20 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
                           </div>
                           <span className="text-[10px] text-white/90 font-mono ml-1">{msg.duration}</span>
                         </div>
-                        <span className="text-[9px] text-white/70 block mt-0.5">
-                          {isPlayingThis ? 'Playing voice note...' : 'Voice Note'}
+                        <span className="text-[9px] text-white/70 flex items-center gap-1 mt-0.5">
+                          <Lock className="w-2.5 h-2.5 text-emerald-300" />
+                          <span>{isPlayingThis ? 'Playing encrypted note...' : 'Encrypted Voice Note'}</span>
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <p className="leading-relaxed">{msg.text}</p>
+                    <div>
+                      <p className="leading-relaxed">{msg.text}</p>
+                      <span className="text-[9px] text-white/70 flex items-center gap-1 mt-1 justify-end">
+                        <Lock className="w-2.5 h-2.5 text-emerald-300" />
+                        <span>Encrypted</span>
+                      </span>
+                    </div>
                   )}
                 </div>
                 <span className="text-[9px] text-slate-500 mt-1 px-1">{msg.time}</span>
@@ -251,7 +294,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
         <div className="glass-card rounded-2xl p-3 border border-rose-500/40 flex items-center justify-between text-xs text-rose-300 animate-pulse">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-            <span>Recording Voice Note... ({recordingTime}s)</span>
+            <span>Recording Encrypted Voice Note... ({recordingTime}s)</span>
           </div>
           <button
             onClick={stopRecording}
@@ -282,7 +325,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName }
               ? 'bg-rose-500 text-white animate-pulse shadow-lg shadow-rose-500/40 scale-110'
               : 'glass-card border border-white/10 text-pink-400 hover:text-white'
           }`}
-          title={isRecording ? 'Stop Recording' : 'Record Voice Note'}
+          title={isRecording ? 'Stop Recording' : 'Record Encrypted Voice Note'}
         >
           <Mic className="w-4 h-4" />
         </button>

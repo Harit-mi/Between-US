@@ -14,7 +14,7 @@ import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucid
 export function App() {
   const { t, i18n } = useTranslation();
 
-  // Instant default user & partner profiles (No login required!)
+  // Instant default user & partner profiles
   const defaultUser = { id: 'user-hitansh-123', email: 'hitansh@betweenus.app' };
   const defaultProfile = {
     id: 'user-hitansh-123',
@@ -169,7 +169,6 @@ export function App() {
 
   const handleLogout = () => {
     triggerHaptic(40);
-    // Reset to initial tab
     setActiveTab('touches');
   };
 
@@ -190,7 +189,11 @@ export function App() {
       )}
 
       {activeTab === 'chat' && (
-        <ChatView currentUserId={userProfile.id} partnerName={partnerName} />
+        <ChatView
+          currentUserId={userProfile.id}
+          partnerName={partnerName}
+          coupleCode={coupleData?.couple_code}
+        />
       )}
 
       {activeTab === 'radio' && (
