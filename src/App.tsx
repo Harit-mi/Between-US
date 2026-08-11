@@ -14,11 +14,11 @@ import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucid
 export function App() {
   const { t, i18n } = useTranslation();
 
-  // Updated Profile Location: You in Ahmedabad, India 🇮🇳 | Her in Santo Domingo, Dominican Republic 🇩🇴
-  const defaultUser = { id: 'user-hitansh-123', email: 'hitansh@betweenus.app' };
+  // Profile: Harit in Ahmedabad, India 🇮🇳 | Her in Santo Domingo, Dominican Republic 🇩🇴
+  const defaultUser = { id: 'user-harit-123', email: 'harit@betweenus.app' };
   const defaultProfile = {
-    id: 'user-hitansh-123',
-    name: 'Hitansh',
+    id: 'user-harit-123',
+    name: 'Harit',
     nickname: 'Amor',
     country: 'India',
     city: 'Ahmedabad',
@@ -63,7 +63,7 @@ export function App() {
     },
     {
       id: 't-2',
-      sender_id: 'user-hitansh-123',
+      sender_id: 'user-harit-123',
       emoji: '❤️',
       name: 'Love',
       created_at: new Date(Date.now() - 600000).toISOString(),
