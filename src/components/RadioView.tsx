@@ -14,7 +14,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  // Universal YouTube video collection (Works on macOS Safari, macOS Chrome & Mobile!)
+  // Universal YouTube video collection
   const [playlist, setPlaylist] = useState<any[]>([
     {
       title: 'Perfect - Ed Sheeran (Official Video)',
@@ -143,16 +143,16 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           )}
         </div>
 
-        {/* Universal macOS & Mobile Compatible YouTube Embed Player */}
+        {/* Video Player Display: Explicit height h-[220px] so it NEVER collapses */}
         {currentTrack.type === 'youtube' ? (
-          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-56 bg-black border border-white/15 shadow-xl relative">
+          <div className="w-full h-[220px] rounded-2xl overflow-hidden bg-black border border-white/15 shadow-xl relative">
             <iframe
               key={currentTrack.youtubeId}
               src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(origin)}`}
               title={currentTrack.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              className="w-full h-full object-cover"
+              className="w-full h-full block border-0"
             />
           </div>
         ) : (
