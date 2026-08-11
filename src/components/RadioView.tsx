@@ -12,19 +12,20 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  // Embed-friendly YouTube video IDs
+  // Universal YouTube video collection (Works on macOS Safari, macOS Chrome & Mobile!)
   const [playlist, setPlaylist] = useState<any[]>([
     {
-      title: 'Perfect - Ed Sheeran (Lyric & Audio)',
-      artist: 'Romantic Special',
+      title: 'Perfect - Ed Sheeran (Official Video)',
+      artist: 'Ed Sheeran',
       youtubeId: '2Vv-BfVoq4g',
       type: 'youtube',
       cover: '🌹',
     },
     {
       title: 'Golden Hour - JVKE (Official Music)',
-      artist: 'Acoustic Special',
+      artist: 'JVKE',
       youtubeId: 'PEM0Vs8jf1w',
       type: 'youtube',
       cover: '✨',
@@ -38,14 +39,14 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
     },
     {
       title: 'Lofi Chill Beats 24/7 (Live Stream)',
-      artist: 'Relaxing Music',
+      artist: 'Lofi Girl',
       youtubeId: 'jfKfPfyJRdk',
       type: 'youtube',
       cover: '☕',
     },
     {
       title: 'Die With A Smile - Lady Gaga & Bruno Mars',
-      artist: 'Duet Special',
+      artist: 'Lady Gaga & Bruno Mars',
       youtubeId: 'kPa7bsKwL-c',
       type: 'youtube',
       cover: '🎵',
@@ -136,21 +137,20 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
               className="glass-pill px-2.5 py-1.5 rounded-xl text-[11px] text-red-400 hover:text-white flex items-center gap-1 border border-red-500/20 transition shrink-0"
             >
               <Youtube className="w-3.5 h-3.5 text-red-500" />
-              <span>App</span>
+              <span>YouTube</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           )}
         </div>
 
-        {/* Privacy-enhanced youtube-nocookie.com domain with cross-origin referrer policy */}
+        {/* Universal macOS & Mobile Compatible YouTube Embed Player */}
         {currentTrack.type === 'youtube' ? (
           <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-56 bg-black border border-white/15 shadow-xl relative">
             <iframe
               key={currentTrack.youtubeId}
-              src={`https://www.youtube-nocookie.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(origin)}`}
               title={currentTrack.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
               className="w-full h-full object-cover"
             />
