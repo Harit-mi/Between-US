@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, Tv, Play, Pause } from 'lucide-react';
+import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, ExternalLink, Play, Pause } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface RadioViewProps {
@@ -10,16 +10,17 @@ interface RadioViewProps {
 export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [showVideo, setShowVideo] = useState(true);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Pre-loaded playlists: Includes Harit & Michel's Spotify Playlist + Romantic Classics
+  const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
+
+  // Playlists & Songs Collection
   const [playlist, setPlaylist] = useState<any[]>([
     {
-      title: "Harit & Michel's Spotify Playlist",
-      artist: 'Harit & Michel • Shared Collection',
-      spotifyId: '52Fiun5SvbLRCHBpPyitEa',
-      type: 'spotify_playlist',
+      title: "Harit & Michel's Shared Spotify Playlist",
+      artist: 'Harit & Michel • Collaborative Collection',
+      spotifyUrl: SPOTIFY_PLAYLIST_FULL_URL,
+      type: 'spotify_link',
       cover: '💖',
     },
     {
@@ -45,7 +46,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
     },
   ]);
 
-  // Input states for adding song or playlist links directly
+  // Input states for adding song links directly
   const [inputUrl, setInputUrl] = useState('');
   const [inputTitle, setInputTitle] = useState('');
 
@@ -59,36 +60,22 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  // Helper to parse Spotify Playlist or Track IDs
-  const extractSpotifyDetails = (url: string) => {
-    if (!url) return null;
-    if (url.includes('spotify.com/playlist/')) {
-      const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
-      return match ? { id: match[1], type: 'spotify_playlist' } : null;
-    }
-    if (url.includes('spotify.com/track/')) {
-      const match = url.match(/track\/([a-zA-Z0-9]+)/);
-      return match ? { id: match[1], type: 'spotify_track' } : null;
-    }
-    return null;
-  };
-
   const handleAddLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputUrl.trim() && !inputTitle.trim()) return;
 
     triggerHaptic([40, 40]);
-    const spotify = extractSpotifyDetails(inputUrl);
+    const isSpotify = inputUrl.includes('spotify.com');
     const ytId = extractYouTubeId(inputUrl);
 
     let newTrack: any;
 
-    if (spotify) {
+    if (isSpotify) {
       newTrack = {
         title: inputTitle.trim() || 'Shared Spotify Playlist',
-        artist: 'Spotify Stream',
-        spotifyId: spotify.id,
-        type: spotify.type,
+        artist: 'Spotify Collection',
+        spotifyUrl: inputUrl.trim(),
+        type: 'spotify_link',
         cover: '🎧',
       };
     } else {
@@ -123,6 +110,31 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
         <Sparkles className="w-4 h-4 text-pink-400" />
       </div>
 
+      {/* Direct Spotify App Launcher Card for Harit & Michel's Playlist */}
+      <div className="glass-card rounded-3xl p-5 border border-emerald-500/40 bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-purple-950/40 space-y-3 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🟢</span>
+            <div>
+              <h3 className="text-sm font-bold text-white leading-none">Harit & Michel's Playlist</h3>
+              <p className="text-[10px] text-emerald-300 mt-0.5">Spotify Collaborative Playlist</p>
+            </div>
+          </div>
+          <span className="text-[10px] text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded-full font-semibold">Active</span>
+        </div>
+
+        <a
+          href={SPOTIFY_PLAYLIST_FULL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => triggerHaptic(50)}
+          className="w-full py-3 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition active:scale-95"
+        >
+          <span>Open Full Playlist in Spotify</span>
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      </div>
+
       {/* PERMANENT LINK INPUT BOX (Supports Spotify & YouTube Links!) */}
       <form onSubmit={handleAddLink} className="glass-card rounded-3xl p-4 border border-pink-500/30 space-y-2.5 bg-gradient-to-r from-pink-950/30 to-purple-950/30">
         <div className="flex items-center justify-between">
@@ -130,14 +142,13 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             <span className="text-sm">🎧</span>
             <span className="text-xs font-bold text-white uppercase tracking-wider">Add Spotify or YouTube Link</span>
           </div>
-          <span className="text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">Free</span>
         </div>
 
         <input
           type="text"
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
-          placeholder="Paste Spotify Playlist link or YouTube URL..."
+          placeholder="Paste Spotify or YouTube link here..."
           className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
         />
 
@@ -146,7 +157,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             type="text"
             value={inputTitle}
             onChange={(e) => setInputTitle(e.target.value)}
-            placeholder="Playlist / Song Name (optional)"
+            placeholder="Song / Playlist Name (optional)"
             className="flex-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
           />
 
@@ -160,80 +171,43 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
         </div>
       </form>
 
-      {/* Main Interactive Music Player Card */}
+      {/* Main Player Card */}
       <div className="glass-card rounded-3xl p-4 border border-white/10 w-full flex flex-col items-center justify-center space-y-3 shadow-2xl relative overflow-hidden">
-        {/* Track Title & Mode Toggle */}
-        <div className="w-full flex items-center justify-between border-b border-white/10 pb-2">
-          <div className="text-left space-y-0.5 max-w-[240px]">
-            <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">
-              <Volume2 className="w-3 h-3 text-pink-400" />
-              <span>Now Playing</span>
-            </div>
-            <h2 className="text-sm font-bold text-white tracking-tight truncate">{currentTrack.title}</h2>
-            <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
+        {/* Track Title */}
+        <div className="w-full text-center space-y-1">
+          <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2.5 py-0.5 rounded-full font-medium">
+            <Volume2 className="w-3 h-3 text-pink-400" />
+            <span>Now Playing</span>
           </div>
-
-          <button
-            onClick={() => {
-              triggerHaptic(30);
-              setShowVideo(!showVideo);
-            }}
-            className="glass-pill px-3 py-1.5 rounded-xl text-xs text-pink-300 hover:text-white flex items-center gap-1.5 border border-white/10 transition"
-          >
-            <Tv className="w-3.5 h-3.5 text-pink-400" />
-            <span>{showVideo ? 'Compact View' : 'Player View'}</span>
-          </button>
+          <h2 className="text-sm font-bold text-white tracking-tight truncate">{currentTrack.title}</h2>
+          <p className="text-[11px] text-slate-400 truncate">{currentTrack.artist}</p>
         </div>
 
-        {/* Player View: Spotify Embed (Height 352px for full playlist player!) OR YouTube Embed OR Vinyl View */}
-        {showVideo ? (
-          currentTrack.type === 'spotify_playlist' || currentTrack.type === 'spotify_track' ? (
-            <div className="w-full rounded-2xl overflow-hidden min-h-[352px] bg-black border border-emerald-500/30 shadow-xl relative">
-              <iframe
-                src={`https://open.spotify.com/embed/${currentTrack.type === 'spotify_playlist' ? 'playlist' : 'track'}/${currentTrack.spotifyId}?utm_source=generator&theme=0`}
-                width="100%"
-                height="352"
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                className="w-full rounded-2xl"
-              />
+        {/* Player View */}
+        {currentTrack.type === 'spotify_link' ? (
+          <div className="py-4 flex flex-col items-center space-y-3 w-full">
+            <div className="w-24 h-24 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-4xl shadow-xl">
+              💖
             </div>
-          ) : (
-            <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-44 bg-black border border-white/15 shadow-xl relative">
-              <iframe
-                src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
-                title={currentTrack.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )
-        ) : (
-          <div className="py-4 flex flex-col items-center space-y-3">
-            <div className="relative w-28 h-28 flex items-center justify-center">
-              <div
-                className={`w-28 h-28 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center shadow-2xl transition-transform duration-1000 ${
-                  isPlayingAudio ? 'animate-spin' : ''
-                }`}
-                style={{ animationDuration: '6s' }}
-              >
-                <div className="w-12 h-12 rounded-full gradient-accent-bg flex items-center justify-center text-xl shadow-inner">
-                  {currentTrack.cover || '🌹'}
-                </div>
-                <div className="absolute w-3 h-3 rounded-full bg-slate-950 border border-white/20" />
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                triggerHaptic(50);
-                setIsPlayingAudio(!isPlayingAudio);
-              }}
-              className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center text-white shadow-lg shadow-pink-500/25 active:scale-95 transition"
+            <a
+              href={currentTrack.spotifyUrl || SPOTIFY_PLAYLIST_FULL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold flex items-center gap-1.5 active:scale-95 transition"
             >
-              {isPlayingAudio ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
-            </button>
+              <span>Play in Spotify App</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        ) : (
+          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-44 bg-black border border-white/15 shadow-xl relative">
+            <iframe
+              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+              title={currentTrack.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full object-cover"
+            />
           </div>
         )}
 
@@ -277,13 +251,13 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  {track.type?.includes('spotify') ? (
+                  {track.type === 'spotify_link' ? (
                     <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md font-semibold">Spotify</span>
                   ) : (
                     <Youtube className="w-3 h-3 text-red-400" />
                   )}
                   <span className={`text-[10px] ${isActive ? 'text-white/90 font-bold' : 'text-slate-500'}`}>
-                    {isActive ? '▶ Playing' : 'Play'}
+                    {isActive ? '▶ Selected' : 'Play'}
                   </span>
                 </div>
               </button>
