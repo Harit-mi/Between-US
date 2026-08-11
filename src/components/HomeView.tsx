@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Sun, Moon, MapPin, Heart, Sparkles } from 'lucide-react';
+import { Settings, Sun, Moon, MapPin, Heart, Sparkles, ExternalLink } from 'lucide-react';
 import { getCountryFlag, calculateDistanceKm } from '../lib/geo';
 import { triggerHaptic } from '../lib/vibration';
 import { TouchFeed } from './TouchFeed';
@@ -25,6 +25,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeTouchAnim, setActiveTouchAnim] = useState<string | null>(null);
+
+  const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
 
   // Live timer loop (every 1 sec)
   useEffect(() => {
@@ -95,7 +97,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-slate-100 flex flex-col items-center p-4 sm:p-6 pb-12 safe-area-pt safe-area-pb">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md space-y-5">
         {/* Top Header */}
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
@@ -129,7 +131,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div>
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('home.you')}</p>
               <h2 className="text-base font-bold text-white truncate">
-                {userProfile?.nickname || userProfile?.name || 'You'}
+                {userProfile?.nickname || userProfile?.name || 'Harit'}
               </h2>
               <p className="text-xs text-slate-400 truncate">{userProfile?.city}</p>
             </div>
@@ -159,7 +161,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t('home.partner')}</p>
                   <h2 className="text-base font-bold text-white truncate">
-                    {partnerProfile?.nickname || partnerProfile?.name || 'Partner'}
+                    {partnerProfile?.nickname || partnerProfile?.name || 'Michel'}
                   </h2>
                   <p className="text-xs text-slate-400 truncate">{partnerProfile?.city}</p>
                 </div>
@@ -188,10 +190,30 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <span>
             {distanceKm != null
               ? t('home.distance', { km: distanceKm.toLocaleString() })
-              : partnerProfile
-              ? t('home.distance', { km: '1,420' })
               : 'Connecting our worlds...'}
           </span>
+        </div>
+
+        {/* SPOTIFY PLAYLIST CARD (Featured right on main Home Screen!) */}
+        <div className="glass-card rounded-3xl p-4 border border-emerald-500/40 bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-purple-950/40 flex items-center justify-between shadow-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🟢</span>
+            <div>
+              <h3 className="text-xs font-bold text-white leading-none">Harit & Michel's Spotify Playlist</h3>
+              <p className="text-[10px] text-emerald-300 mt-1">Tap to open collaborative playlist</p>
+            </div>
+          </div>
+
+          <a
+            href={SPOTIFY_PLAYLIST_FULL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => triggerHaptic(50)}
+            className="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition shrink-0"
+          >
+            <span>Open</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
 
         {/* Four Large Touch Action Buttons */}
@@ -232,7 +254,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <TouchFeed
           touches={touches}
           currentUserId={userProfile?.id}
-          partnerName={partnerProfile?.nickname || partnerProfile?.name || 'Partner'}
+          partnerName={partnerProfile?.nickname || partnerProfile?.name || 'Michel'}
         />
       </div>
     </div>
