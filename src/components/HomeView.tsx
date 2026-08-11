@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Sun, Moon, MapPin, Heart, Sparkles, ExternalLink } from 'lucide-react';
+import { Settings, Sun, Moon, MapPin, Heart, Sparkles, ExternalLink, Bell } from 'lucide-react';
 import { getCountryFlag, calculateDistanceKm } from '../lib/geo';
-import { triggerHaptic } from '../lib/vibration';
+import { triggerHaptic, sendBrowserNotification } from '../lib/vibration';
 import { TouchFeed } from './TouchFeed';
 
 interface HomeViewProps {
@@ -25,6 +25,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { t, i18n } = useTranslation();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeTouchAnim, setActiveTouchAnim] = useState<string | null>(null);
+  const [notifGranted, setNotifGranted] = useState(
+    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
+  );
 
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
 
@@ -35,6 +38,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleEnableNotifications = async () => {
+    triggerHaptic(50);
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        setNotifGranted(true);
+        sendBrowserNotification('Between Us ❤️', 'Touch notifications enabled! You will now be notified when Michel sends a touch.', '❤️');
+      }
+    }
+  };
 
   // Format local time given an IANA timezone string
   const formatLocalTime = (tz: string) => {
@@ -87,6 +101,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
     setActiveTouchAnim(option.name_en);
     setTimeout(() => setActiveTouchAnim(null), 600);
     onSendTouch(option);
+
+    // Send test notification locally as well if enabled
+    if (notifGranted) {
+      const partnerName = partnerProfile?.nickname || partnerProfile?.name || 'Michel';
+      sendBrowserNotification('Between Us ❤️', `Sent ${option.emoji} ${option.name_en} to ${partnerName}!`, option.emoji);
+    }
   };
 
   const userFlag = getCountryFlag(userProfile?.country);
@@ -115,6 +135,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <Settings className="w-4 h-4 text-slate-300" />
           </button>
         </div>
+
+        {/* Enable Notification Banner (If not yet enabled) */}
+        {!notifGranted && (
+          <div className="glass-card rounded-2xl p-3.5 border border-pink-500/30 bg-gradient-to-r from-pink-950/40 to-purple-950/40 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2.5">
+              <Bell className="w-4 h-4 text-pink-400 animate-bounce" />
+              <div>
+                <p className="font-bold text-white leading-none">Enable Touch Notifications</p>
+                <p className="text-[10px] text-pink-300 mt-0.5">Get notified instantly when Michel sends a touch!</p>
+              </div>
+            </div>
+            <button
+              onClick={handleEnableNotifications}
+              className="py-1.5 px-3 rounded-xl gradient-accent-bg text-white font-semibold text-[11px] shadow-md shadow-pink-500/20 active:scale-95 transition shrink-0"
+            >
+              Enable
+            </button>
+          </div>
+        )}
 
         {/* Dual Partner Cards */}
         <div className="grid grid-cols-2 gap-3.5">
@@ -194,7 +233,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </span>
         </div>
 
-        {/* SPOTIFY PLAYLIST CARD (Featured right on main Home Screen!) */}
+        {/* SPOTIFY PLAYLIST CARD */}
         <div className="glass-card rounded-3xl p-4 border border-emerald-500/40 bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-purple-950/40 flex items-center justify-between shadow-xl">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🟢</span>
