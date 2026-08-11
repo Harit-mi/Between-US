@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radio, Play, Pause, SkipForward, Music, Disc, Plus, X, Youtube, Link as LinkIcon } from 'lucide-react';
+import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface RadioViewProps {
@@ -9,207 +9,143 @@ interface RadioViewProps {
 
 export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
-  // Free pre-loaded streams (No Spotify Premium needed!) + User added tracks
+  // Pre-loaded popular romantic tracks & live streams
   const [playlist, setPlaylist] = useState<any[]>([
     {
-      title: 'Lofi Girl - Chill Beats 24/7',
-      artist: 'Free Live Stream',
+      title: 'Lofi Chill Beats 24/7',
+      artist: 'Free Live Radio',
       youtubeId: 'jfKfPfyJRdk',
       cover: '☕',
-      type: 'youtube',
     },
     {
-      title: 'Romantic Piano & Acoustic',
-      artist: 'Free Web Radio',
-      youtubeId: '4xDzrJKXOOY',
+      title: 'Perfect - Ed Sheeran',
+      artist: 'Romantic Special',
+      youtubeId: '2Vv-BfVoq4g',
       cover: '🌹',
-      type: 'youtube',
     },
     {
-      title: 'Midnight Jazz & Rain',
-      artist: 'Relaxing Vibes',
-      youtubeId: '5qap5aO4i9A',
-      cover: '🌙',
-      type: 'youtube',
+      title: 'Golden Hour - JVKE',
+      artist: 'Acoustic Version',
+      youtubeId: 'PEM0Vs8jf1w',
+      cover: '✨',
     },
   ]);
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newUrl, setNewUrl] = useState('');
+  // Input states for adding song links directly
+  const [inputUrl, setInputUrl] = useState('');
+  const [inputTitle, setInputTitle] = useState('');
 
-  const currentTrack = playlist[currentTrackIndex] || null;
+  const currentTrack = playlist[currentTrackIndex] || playlist[0];
 
-  // Extract YouTube Video ID from any YouTube URL format
+  // Helper to parse YouTube video IDs
   const extractYouTubeId = (url: string) => {
+    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const togglePlay = () => {
-    if (!currentTrack) return;
-    triggerHaptic(50);
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleNextTrack = () => {
-    if (playlist.length === 0) return;
-    triggerHaptic(40);
-    setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
-  };
-
-  const handleAddTrack = (e: React.FormEvent) => {
+  const handleAddSong = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!inputUrl.trim() && !inputTitle.trim()) return;
 
     triggerHaptic([40, 40]);
-    const ytId = extractYouTubeId(newUrl);
+    const ytId = extractYouTubeId(inputUrl) || 'jfKfPfyJRdk';
+    const title = inputTitle.trim() || (ytId ? 'Custom YouTube Song' : 'Our Song');
 
-    const track = {
-      title: newTitle.trim(),
-      artist: ytId ? 'YouTube Stream' : 'Custom Web Track',
-      youtubeId: ytId || 'jfKfPfyJRdk',
-      cover: ytId ? '🎬' : '🎵',
-      type: ytId ? 'youtube' : 'custom',
+    const newTrack = {
+      title,
+      artist: 'Added by you ❤️',
+      youtubeId: ytId,
+      cover: '🎬',
     };
 
-    setPlaylist((prev) => [track, ...prev]);
+    setPlaylist((prev) => [newTrack, ...prev]);
     setCurrentTrackIndex(0);
-    setIsPlaying(true);
-    setNewTitle('');
-    setNewUrl('');
-    setIsAdding(false);
+    setInputUrl('');
+    setInputTitle('');
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4">
+    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4 overflow-y-auto">
       {/* Header */}
-      <div className="w-full flex items-center justify-between">
+      <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div>
           <div className="inline-flex items-center gap-1.5 glass-pill px-3 py-1 rounded-full border border-pink-500/20 text-xs font-semibold text-pink-300">
             <Radio className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
             <span>{t('radio.title')}</span>
           </div>
+          <p className="text-[11px] text-slate-400 mt-1">100% Free Music • Synced with {partnerName || 'Partner'}</p>
         </div>
-
-        <button
-          onClick={() => setIsAdding(!isAdding)}
-          className="py-1.5 px-3 rounded-xl gradient-accent-bg text-white text-xs font-semibold shadow-md shadow-pink-500/20 flex items-center gap-1 active:scale-95 transition"
-        >
-          {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-          <span>{isAdding ? 'Close' : 'Add YouTube Song'}</span>
-        </button>
+        <Sparkles className="w-4 h-4 text-pink-400" />
       </div>
 
-      {/* Add YouTube / Audio Track Form */}
-      {isAdding && (
-        <form onSubmit={handleAddTrack} className="w-full glass-card rounded-3xl p-5 border border-pink-500/30 space-y-3 animate-in fade-in zoom-in duration-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-pink-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Youtube className="w-4 h-4 text-red-500" />
-              <span>Add Song (No Premium Needed!)</span>
-            </h3>
-          </div>
+      {/* PERMANENT PASTE LINK INPUT BOX (Always visible!) */}
+      <form onSubmit={handleAddSong} className="glass-card rounded-3xl p-4 border border-pink-500/30 space-y-2.5 bg-gradient-to-r from-pink-950/30 to-purple-950/30">
+        <div className="flex items-center gap-2">
+          <Youtube className="w-4 h-4 text-red-500 shrink-0" />
+          <span className="text-xs font-bold text-white uppercase tracking-wider">Paste Any YouTube Song Link</span>
+        </div>
 
+        <input
+          type="text"
+          value={inputUrl}
+          onChange={(e) => setInputUrl(e.target.value)}
+          placeholder="Paste YouTube URL here (e.g. https://www.youtube.com/watch?v=...)"
+          className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
+        />
+
+        <div className="flex gap-2">
           <input
             type="text"
-            required
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Song Name (e.g. Perfect - Ed Sheeran)"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-pink-500"
+            value={inputTitle}
+            onChange={(e) => setInputTitle(e.target.value)}
+            placeholder="Song Title (optional)"
+            className="flex-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
           />
-
-          <input
-            type="url"
-            value={newUrl}
-            onChange={(e) => setNewUrl(e.target.value)}
-            placeholder="Paste YouTube Link (e.g. https://www.youtube.com/watch?v=...)"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-pink-500"
-          />
-
-          <p className="text-[10px] text-slate-400">
-            💡 <strong>100% Free:</strong> Paste any YouTube song link! Works on all phones without Spotify Premium or paid accounts.
-          </p>
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl gradient-accent-bg text-white text-xs font-semibold shadow-md shadow-pink-500/20 mt-1"
+            className="px-4 py-2 rounded-xl gradient-accent-bg text-white font-semibold text-xs shadow-md shadow-pink-500/20 flex items-center gap-1 active:scale-95 transition"
           >
-            Add & Play Together
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add</span>
           </button>
-        </form>
-      )}
+        </div>
+      </form>
 
-      {/* Embedded Free Player Card */}
+      {/* Main Interactive Music Player Card */}
       <div className="glass-card rounded-3xl p-5 border border-white/10 w-full flex flex-col items-center justify-center space-y-4 shadow-2xl relative overflow-hidden">
-        {currentTrack && currentTrack.youtubeId ? (
-          <div className="w-full rounded-2xl overflow-hidden aspect-video bg-black/60 border border-white/10 shadow-lg">
-            <iframe
-              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=${isPlaying ? 1 : 0}&enablejsapi=1`}
-              title={currentTrack.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            />
+        {/* Track Title */}
+        <div className="text-center space-y-1">
+          <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2.5 py-0.5 rounded-full font-medium">
+            <Volume2 className="w-3 h-3 text-pink-400" />
+            <span>Now Playing</span>
           </div>
-        ) : (
-          <div className="relative w-36 h-36 flex items-center justify-center">
-            <div
-              className={`w-32 h-32 rounded-full bg-slate-900 border-4 border-slate-800 flex items-center justify-center shadow-2xl transition-transform duration-1000 ${
-                isPlaying ? 'animate-spin' : ''
-              }`}
-              style={{ animationDuration: '6s' }}
-            >
-              <div className="w-14 h-14 rounded-full gradient-accent-bg flex items-center justify-center text-xl shadow-inner">
-                {currentTrack?.cover || '📻'}
-              </div>
-              <div className="absolute w-3.5 h-3.5 rounded-full bg-slate-950 border border-white/20" />
-            </div>
-          </div>
-        )}
-
-        {/* Track Details */}
-        <div className="text-center space-y-0.5">
-          <h2 className="text-base font-bold text-white tracking-tight">
-            {currentTrack ? currentTrack.title : 'No Song Selected'}
-          </h2>
-          <p className="text-xs text-pink-300 font-medium">
-            {currentTrack ? currentTrack.artist : 'Add any YouTube link!'}
-          </p>
+          <h2 className="text-base font-bold text-white tracking-tight">{currentTrack.title}</h2>
+          <p className="text-xs text-slate-400">{currentTrack.artist}</p>
         </div>
 
-        {/* Sync Indicator */}
+        {/* Embedded Interactive YouTube Audio Player (Tappable for audio!) */}
+        <div className="w-full rounded-2xl overflow-hidden aspect-video bg-black border border-white/15 shadow-xl relative">
+          <iframe
+            src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+            title={currentTrack.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+
         <div className="flex items-center gap-2 text-[11px] text-slate-400 bg-white/5 px-3 py-1 rounded-full">
-          <Disc className={`w-3.5 h-3.5 ${isPlaying ? 'text-emerald-400 animate-spin' : 'text-slate-500'}`} />
-          <span>Synced with {partnerName || 'Partner'}</span>
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center justify-center gap-6 pt-1">
-          <button
-            onClick={togglePlay}
-            disabled={!currentTrack}
-            className="w-12 h-12 rounded-2xl gradient-accent-bg flex items-center justify-center text-white shadow-xl shadow-pink-500/30 disabled:opacity-30 hover:scale-105 active:scale-95 transition"
-          >
-            {isPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
-          </button>
-
-          <button
-            onClick={handleNextTrack}
-            disabled={playlist.length <= 1}
-            className="p-3 rounded-2xl glass-pill border border-white/10 text-slate-300 hover:text-white disabled:opacity-30 transition active:scale-95"
-          >
-            <SkipForward className="w-4 h-4" />
-          </button>
+          <Disc className="w-3.5 h-3.5 text-pink-400 animate-spin" />
+          <span>Tap video controls above to adjust volume</span>
         </div>
       </div>
 
-      {/* Playlist Selector */}
+      {/* Shared Playlist List */}
       <div className="w-full glass-card rounded-3xl p-4 border border-white/10 space-y-2">
         <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -218,7 +154,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           <Music className="w-3.5 h-3.5 text-pink-400" />
         </div>
 
-        <div className="space-y-1.5 max-h-36 overflow-y-auto">
+        <div className="space-y-1.5 max-h-40 overflow-y-auto">
           {playlist.map((track, idx) => {
             const isActive = idx === currentTrackIndex;
             return (
@@ -227,7 +163,6 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
                 onClick={() => {
                   triggerHaptic(40);
                   setCurrentTrackIndex(idx);
-                  setIsPlaying(true);
                 }}
                 className={`w-full p-2.5 rounded-2xl flex items-center justify-between text-xs transition ${
                   isActive
@@ -242,10 +177,9 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
                     <p className={`text-[10px] truncate ${isActive ? 'text-white/80' : 'text-slate-500'}`}>{track.artist}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-pink-300">
-                  {track.youtubeId && <Youtube className="w-3 h-3 text-red-400" />}
-                  <span>{isActive ? 'Playing' : 'Play'}</span>
-                </div>
+                <span className={`text-[10px] ${isActive ? 'text-white/90 font-bold' : 'text-slate-500'}`}>
+                  {isActive ? '▶ Playing' : 'Play'}
+                </span>
               </button>
             );
           })}
