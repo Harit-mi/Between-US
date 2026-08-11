@@ -1,0 +1,83 @@
+{
+  "app": {
+    "title": "ENTRE NOSOTROS",
+    "subtitle": "Nuestro Mundo Privado",
+    "tagline": "Dos corazones, un mismo espacio."
+  },
+  "auth": {
+    "welcome": "Bienvenido a Entre Nosotros",
+    "subheading": "Tu espacio íntimo y privado para dos.",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "email_placeholder": "tu@ejemplo.com",
+    "password_placeholder": "••••••••",
+    "submit_login": "Iniciar Sesión",
+    "submit_signup": "Crear Cuenta",
+    "switch_to_signup": "¿No tienes cuenta? Regístrate",
+    "switch_to_login": "¿Ya tienes cuenta? Inicia Sesión",
+    "profile_title": "Completa tu Perfil",
+    "profile_sub": "Permite que tu pareja sepa quién eres y dónde estás.",
+    "name": "Tu Nombre Completo",
+    "nickname": "Apodo (cómo te dice)",
+    "country": "País",
+    "city": "Ciudad",
+    "timezone": "Zona Horaria",
+    "save_profile": "Guardar Perfil y Continuar"
+  },
+  "pairing": {
+    "title": "Bienvenido/a, {{name}} ❤️",
+    "subheading": "Para iniciar su mundo compartido, conéctate con tu pareja.",
+    "create_button": "Crear Nuestro Mundo",
+    "join_button": "Unirme con un Código",
+    "code_generated": "Tu Código Único de Pareja",
+    "copy_code": "Copiar Código",
+    "copied": "¡Copiado!",
+    "romantic_line": "Envíale este código a tu pareja ❤️",
+    "waiting": "Esperando a que tu pareja se una...",
+    "enter_code": "Ingresa el Código de tu Pareja",
+    "code_placeholder": "ej. X7K29M",
+    "submit_join": "Conectar",
+    "invalid_code": "Código inválido o ya utilizado."
+  },
+  "home": {
+    "header": "ENTRE NOSOTROS ❤️",
+    "you": "Tú",
+    "partner": "Pareja",
+    "waiting_partner": "Esperando a la pareja...",
+    "distance": "{{km}} km de distancia",
+    "status": {
+      "available": "Disponible",
+      "sleeping": "Durmiendo 😴",
+      "working": "Trabajando 💼",
+      "listening": "Escuchando 🎧",
+      "busy": "Ocupado/a 🤫",
+      "thinking": "Pensando en ti 💭"
+    },
+    "touches_title": "Enviar un Toque",
+    "history_title": "Historial de Toques",
+    "no_touches": "No hay toques aún. ¡Toca un botón para enviar amor!",
+    "you_sent": "Enviaste {{emoji}} {{name}}",
+    "partner_sent": "{{name}} te envió {{emoji}} {{type}}",
+    "ago": "hace"
+  },
+  "touch": {
+    "Love": "Amor",
+    "Hug": "Abrazo",
+    "Kiss": "Beso",
+    "Miss you": "Te extraño",
+    "sent_love": "te envió amor ❤️",
+    "sent_hug": "te envió un abrazo 🤗",
+    "sent_kiss": "te envió un beso 💋",
+    "misses_you": "te extraña 🥺"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "status": "Actualizar tu Estado",
+    "couple_code": "Código de Pareja",
+    "logout": "Cerrar Sesión",
+    "close": "Cerrar"
+  }
+}

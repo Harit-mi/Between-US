@@ -1,0 +1,83 @@
+{
+  "app": {
+    "title": "BETWEEN US",
+    "subtitle": "Our Private World",
+    "tagline": "Two hearts, one shared space."
+  },
+  "auth": {
+    "welcome": "Welcome to Between Us",
+    "subheading": "Your private, intimate space for two.",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "email": "Email address",
+    "password": "Password",
+    "email_placeholder": "you@example.com",
+    "password_placeholder": "••••••••",
+    "submit_login": "Log In",
+    "submit_signup": "Create Account",
+    "switch_to_signup": "Don't have an account? Sign Up",
+    "switch_to_login": "Already have an account? Log In",
+    "profile_title": "Complete Your Profile",
+    "profile_sub": "Let your partner know who you are and where you are.",
+    "name": "Your Full Name",
+    "nickname": "Nickname (what they call you)",
+    "country": "Country",
+    "city": "City",
+    "timezone": "Timezone",
+    "save_profile": "Save Profile & Continue"
+  },
+  "pairing": {
+    "title": "Welcome, {{name}} ❤️",
+    "subheading": "To start your shared world, connect with your partner.",
+    "create_button": "Create Our World",
+    "join_button": "Join with a Code",
+    "code_generated": "Your Unique Couple Code",
+    "copy_code": "Copy Code",
+    "copied": "Copied!",
+    "romantic_line": "Send this code to them ❤️",
+    "waiting": "Waiting for your partner to join...",
+    "enter_code": "Enter Partner's Code",
+    "code_placeholder": "e.g. X7K29M",
+    "submit_join": "Connect",
+    "invalid_code": "Invalid code or code already used."
+  },
+  "home": {
+    "header": "BETWEEN US ❤️",
+    "you": "You",
+    "partner": "Partner",
+    "waiting_partner": "Waiting for partner...",
+    "distance": "{{km}} km apart",
+    "status": {
+      "available": "Available",
+      "sleeping": "Sleeping 😴",
+      "working": "Working 💼",
+      "listening": "Listening 🎧",
+      "busy": "Busy 🤫",
+      "thinking": "Thinking of you 💭"
+    },
+    "touches_title": "Send a Touch",
+    "history_title": "Touch History",
+    "no_touches": "No touches yet. Tap a button above to send love!",
+    "you_sent": "You sent {{emoji}} {{name}}",
+    "partner_sent": "{{name}} sent you {{emoji}} {{type}}",
+    "ago": "ago"
+  },
+  "touch": {
+    "Love": "Love",
+    "Hug": "Hug",
+    "Kiss": "Kiss",
+    "Miss you": "Miss you",
+    "sent_love": "sent you love ❤️",
+    "sent_hug": "sent you a hug 🤗",
+    "sent_kiss": "sent you a kiss 💋",
+    "misses_you": "misses you 🥺"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "status": "Update Your Status",
+    "couple_code": "Your Couple Code",
+    "logout": "Log Out",
+    "close": "Close"
+  }
+}
