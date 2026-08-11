@@ -14,7 +14,7 @@ import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucid
 export function App() {
   const { t, i18n } = useTranslation();
 
-  // Profile: Harit in Ahmedabad, India 🇮🇳 | Her in Santo Domingo, Dominican Republic 🇩🇴
+  // Profile: Harit in Ahmedabad, India 🇮🇳 | Michel in Santo Domingo, Dominican Republic 🇩🇴
   const defaultUser = { id: 'user-harit-123', email: 'harit@betweenus.app' };
   const defaultProfile = {
     id: 'user-harit-123',
@@ -30,9 +30,9 @@ export function App() {
   };
 
   const defaultPartner = {
-    id: 'partner-amor-456',
-    name: 'Amor',
-    nickname: 'Mi Amor',
+    id: 'partner-michel-456',
+    name: 'Michel',
+    nickname: 'Michel',
     country: 'Dominican Republic',
     city: 'Santo Domingo',
     latitude: 18.4861,
@@ -56,7 +56,7 @@ export function App() {
   const [touches, setTouches] = useState<any[]>([
     {
       id: 't-1',
-      sender_id: 'partner-amor-456',
+      sender_id: 'partner-michel-456',
       emoji: '🤗',
       name: 'Hug',
       created_at: new Date(Date.now() - 120000).toISOString(),
