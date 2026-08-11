@@ -13,29 +13,39 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const [showVideo, setShowVideo] = useState(true);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Pre-loaded popular romantic tracks & live streams
+  // Pre-loaded playlists: Includes Harit & Michel's Spotify Playlist + Romantic Classics
   const [playlist, setPlaylist] = useState<any[]>([
+    {
+      title: "Harit & Michel's Shared Playlist",
+      artist: 'Spotify Special Collection',
+      spotifyId: '52Fiun5SvbLRCHBpPyitEa',
+      type: 'spotify_playlist',
+      cover: '💖',
+    },
     {
       title: 'Perfect - Ed Sheeran',
       artist: 'Romantic Special',
       youtubeId: '2Vv-BfVoq4g',
+      type: 'youtube',
       cover: '🌹',
-    },
-    {
-      title: 'Lofi Chill Beats 24/7',
-      artist: 'Free Live Radio',
-      youtubeId: 'jfKfPfyJRdk',
-      cover: '☕',
     },
     {
       title: 'Golden Hour - JVKE',
       artist: 'Acoustic Version',
       youtubeId: 'PEM0Vs8jf1w',
+      type: 'youtube',
       cover: '✨',
+    },
+    {
+      title: 'Lofi Chill Beats 24/7',
+      artist: 'Free Live Radio',
+      youtubeId: 'jfKfPfyJRdk',
+      type: 'youtube',
+      cover: '☕',
     },
   ]);
 
-  // Input states for adding song links directly
+  // Input states for adding song or playlist links directly
   const [inputUrl, setInputUrl] = useState('');
   const [inputTitle, setInputTitle] = useState('');
 
@@ -49,20 +59,48 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
-  const handleAddSong = (e: React.FormEvent) => {
+  // Helper to parse Spotify Playlist or Track IDs
+  const extractSpotifyDetails = (url: string) => {
+    if (!url) return null;
+    if (url.includes('spotify.com/playlist/')) {
+      const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
+      return match ? { id: match[1], type: 'spotify_playlist' } : null;
+    }
+    if (url.includes('spotify.com/track/')) {
+      const match = url.match(/track\/([a-zA-Z0-9]+)/);
+      return match ? { id: match[1], type: 'spotify_track' } : null;
+    }
+    return null;
+  };
+
+  const handleAddLink = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputUrl.trim() && !inputTitle.trim()) return;
 
     triggerHaptic([40, 40]);
-    const ytId = extractYouTubeId(inputUrl) || '2Vv-BfVoq4g';
-    const title = inputTitle.trim() || (ytId ? 'Custom YouTube Song' : 'Our Song');
+    const spotify = extractSpotifyDetails(inputUrl);
+    const ytId = extractYouTubeId(inputUrl);
 
-    const newTrack = {
-      title,
-      artist: 'Added by you ❤️',
-      youtubeId: ytId,
-      cover: '🎬',
-    };
+    let newTrack: any;
+
+    if (spotify) {
+      newTrack = {
+        title: inputTitle.trim() || 'Shared Spotify Playlist',
+        artist: 'Spotify Stream',
+        spotifyId: spotify.id,
+        type: spotify.type,
+        cover: '🎧',
+      };
+    } else {
+      const videoId = ytId || '2Vv-BfVoq4g';
+      newTrack = {
+        title: inputTitle.trim() || 'Our Shared Song',
+        artist: 'Added by you ❤️',
+        youtubeId: videoId,
+        type: 'youtube',
+        cover: '🎬',
+      };
+    }
 
     setPlaylist((prev) => [newTrack, ...prev]);
     setCurrentTrackIndex(0);
@@ -80,23 +118,26 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             <Radio className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
             <span>{t('radio.title')}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">100% Free Music • Synced with {partnerName || 'Partner'}</p>
+          <p className="text-[11px] text-slate-400 mt-1">Spotify & YouTube Radio • Synced with {partnerName || 'Partner'}</p>
         </div>
         <Sparkles className="w-4 h-4 text-pink-400" />
       </div>
 
-      {/* PERMANENT PASTE LINK INPUT BOX (Always visible!) */}
-      <form onSubmit={handleAddSong} className="glass-card rounded-3xl p-4 border border-pink-500/30 space-y-2.5 bg-gradient-to-r from-pink-950/30 to-purple-950/30">
-        <div className="flex items-center gap-2">
-          <Youtube className="w-4 h-4 text-red-500 shrink-0" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Paste Any YouTube Song Link</span>
+      {/* PERMANENT LINK INPUT BOX (Supports Spotify & YouTube Links!) */}
+      <form onSubmit={handleAddLink} className="glass-card rounded-3xl p-4 border border-pink-500/30 space-y-2.5 bg-gradient-to-r from-pink-950/30 to-purple-950/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🎧</span>
+            <span className="text-xs font-bold text-white uppercase tracking-wider">Add Spotify or YouTube Link</span>
+          </div>
+          <span className="text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">Free</span>
         </div>
 
         <input
           type="text"
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
-          placeholder="Paste YouTube URL here (e.g. https://www.youtube.com/watch?v=...)"
+          placeholder="Paste Spotify Playlist/Track link or YouTube URL..."
           className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
         />
 
@@ -105,7 +146,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             type="text"
             value={inputTitle}
             onChange={(e) => setInputTitle(e.target.value)}
-            placeholder="Song Title (optional)"
+            placeholder="Playlist / Song Name (optional)"
             className="flex-1 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-pink-500"
           />
 
@@ -140,21 +181,35 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             className="glass-pill px-3 py-1.5 rounded-xl text-xs text-pink-300 hover:text-white flex items-center gap-1.5 border border-white/10 transition"
           >
             <Tv className="w-3.5 h-3.5 text-pink-400" />
-            <span>{showVideo ? 'Compact View' : 'Video View'}</span>
+            <span>{showVideo ? 'Compact View' : 'Player View'}</span>
           </button>
         </div>
 
-        {/* Video / Audio Player Display */}
+        {/* Player View: Spotify Embed OR YouTube Embed OR Vinyl View */}
         {showVideo ? (
-          <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-44 bg-black border border-white/15 shadow-xl relative">
-            <iframe
-              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
-              title={currentTrack.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full object-cover"
-            />
-          </div>
+          currentTrack.type === 'spotify_playlist' || currentTrack.type === 'spotify_track' ? (
+            <div className="w-full rounded-2xl overflow-hidden min-h-[152px] bg-black border border-white/15 shadow-xl relative">
+              <iframe
+                src={`https://open.spotify.com/embed/${currentTrack.type === 'spotify_playlist' ? 'playlist' : 'track'}/${currentTrack.spotifyId}?utm_source=generator&theme=0`}
+                width="100%"
+                height="152"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                className="w-full rounded-2xl"
+              />
+            </div>
+          ) : (
+            <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-44 bg-black border border-white/15 shadow-xl relative">
+              <iframe
+                src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
+                title={currentTrack.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )
         ) : (
           <div className="py-4 flex flex-col items-center space-y-3">
             <div className="relative w-28 h-28 flex items-center justify-center">
@@ -222,9 +277,16 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
                     <p className={`text-[10px] truncate ${isActive ? 'text-white/80' : 'text-slate-500'}`}>{track.artist}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] ${isActive ? 'text-white/90 font-bold' : 'text-slate-500'}`}>
-                  {isActive ? '▶ Playing' : 'Play'}
-                </span>
+                <div className="flex items-center gap-1">
+                  {track.type?.includes('spotify') ? (
+                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md font-semibold">Spotify</span>
+                  ) : (
+                    <Youtube className="w-3 h-3 text-red-400" />
+                  )}
+                  <span className={`text-[10px] ${isActive ? 'text-white/90 font-bold' : 'text-slate-500'}`}>
+                    {isActive ? '▶ Playing' : 'Play'}
+                  </span>
+                </div>
               </button>
             );
           })}
