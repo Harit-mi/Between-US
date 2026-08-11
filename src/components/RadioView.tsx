@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, ExternalLink, Play, Pause } from 'lucide-react';
+import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, ExternalLink } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface RadioViewProps {
@@ -13,7 +13,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
 
-  // Embed-friendly YouTube video IDs (verified working for web embeds!)
+  // Embed-friendly YouTube video IDs
   const [playlist, setPlaylist] = useState<any[]>([
     {
       title: 'Perfect - Ed Sheeran (Lyric & Audio)',
@@ -117,7 +117,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
       {/* Main Interactive YouTube Video Player Card */}
       <div className="glass-card rounded-3xl p-4 border border-white/10 w-full flex flex-col items-center justify-center space-y-3 shadow-2xl relative overflow-hidden">
-        {/* Track Title & Direct YouTube External Button */}
+        {/* Track Title & Direct External Button */}
         <div className="w-full flex items-center justify-between border-b border-white/10 pb-2">
           <div className="text-left space-y-0.5 max-w-[220px]">
             <div className="inline-flex items-center gap-1 text-[10px] text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded-full font-medium">
@@ -142,13 +142,15 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           )}
         </div>
 
-        {/* Player View: YouTube Video Embed OR Spotify Link Launcher */}
+        {/* Privacy-enhanced youtube-nocookie.com domain with cross-origin referrer policy */}
         {currentTrack.type === 'youtube' ? (
           <div className="w-full rounded-2xl overflow-hidden aspect-video max-h-56 bg-black border border-white/15 shadow-xl relative">
             <iframe
-              src={`https://www.youtube.com/embed/${currentTrack.youtubeId}?rel=0`}
+              key={currentTrack.youtubeId}
+              src={`https://www.youtube-nocookie.com/embed/${currentTrack.youtubeId}?autoplay=1&playsinline=1`}
               title={currentTrack.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
               className="w-full h-full object-cover"
             />
