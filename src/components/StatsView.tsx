@@ -19,14 +19,14 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4 overflow-y-auto">
+    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto p-4 safe-area-pt space-y-4 overflow-y-auto pb-12">
       {/* Header */}
       <div className="glass-card rounded-2xl p-5 border border-pink-500/20 text-center space-y-2 relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-pink-500/20 rounded-full blur-2xl pointer-events-none" />
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl gradient-accent-bg text-white shadow-lg shadow-pink-500/25 mb-1">
           <Heart className="w-6 h-6 fill-white animate-heart-pulse" />
         </div>
-        <h2 className="text-xl font-extrabold text-white tracking-tight">{userName || 'You'} & {partnerName || 'Partner'}</h2>
+        <h2 className="text-xl font-extrabold text-white tracking-tight">{userName || 'Harit'} & {partnerName || 'Michel'}</h2>
         <p className="text-xs text-pink-300 font-medium">{t('app.tagline')}</p>
       </div>
 
@@ -69,7 +69,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
       </div>
 
       {/* Milestones List */}
-      <div className="glass-card rounded-3xl p-5 border border-white/10 space-y-3">
+      <div className="glass-card rounded-3xl p-5 border border-white/10 space-y-3 pb-8">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <h3 className="text-xs font-semibold text-slate-300 flex items-center gap-2">
             <Award className="w-4 h-4 text-pink-400" />

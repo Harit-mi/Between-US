@@ -9,7 +9,6 @@ interface MemoriesViewProps {
 
 export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
-  // Starts with clean empty memories list
   const [memories, setMemories] = useState<any[]>([]);
 
   const [isAdding, setIsAdding] = useState(false);
@@ -19,7 +18,6 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle Photo & Video File Uploads from Phone/MacBook
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -63,7 +61,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4">
+    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto p-4 safe-area-pt space-y-4">
       {/* Header */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div>
@@ -158,7 +156,7 @@ export const MemoriesView: React.FC<MemoriesViewProps> = ({ partnerName }) => {
       )}
 
       {/* Shared Memories Feed */}
-      <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+      <div className="flex-1 overflow-y-auto space-y-4 pr-1 pb-6">
         {memories.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
             <ImageIcon className="w-8 h-8 text-slate-600" />

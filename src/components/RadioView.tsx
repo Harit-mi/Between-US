@@ -103,7 +103,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4 overflow-y-auto">
+    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto p-4 safe-area-pt space-y-4 overflow-y-auto">
       {/* Header */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div>
@@ -111,7 +111,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
             <Radio className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
             <span>{t('radio.title')}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">YouTube Videos & Spotify • Synced with {partnerName || 'Partner'}</p>
+          <p className="text-[11px] text-slate-400 mt-1">YouTube Videos & Spotify • Synced with {partnerName || 'Michel'}</p>
         </div>
         <Sparkles className="w-4 h-4 text-pink-400" />
       </div>
@@ -143,7 +143,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           )}
         </div>
 
-        {/* Video Player Display: Explicit height h-[220px] so it NEVER collapses */}
+        {/* Video Player Display: Explicit height h-[220px] */}
         {currentTrack.type === 'youtube' ? (
           <div className="w-full h-[220px] rounded-2xl overflow-hidden bg-black border border-white/15 shadow-xl relative">
             <iframe
@@ -174,7 +174,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
 
         <div className="flex items-center gap-2 text-[10px] text-slate-400 bg-white/5 px-3 py-1 rounded-full">
           <Disc className="w-3 h-3 text-pink-400 animate-spin" />
-          <span>Synced playback with {partnerName || 'Partner'}</span>
+          <span>Synced playback with {partnerName || 'Michel'}</span>
         </div>
       </div>
 
@@ -230,7 +230,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
       </form>
 
       {/* Featured YouTube Videos & Playlist List */}
-      <div className="w-full glass-card rounded-3xl p-4 border border-white/10 space-y-2">
+      <div className="w-full glass-card rounded-3xl p-4 border border-white/10 space-y-2 pb-6">
         <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
             YouTube Videos & Music ({playlist.length})

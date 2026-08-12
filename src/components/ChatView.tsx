@@ -72,7 +72,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
       encryptedContent = await encryptE2EE(rawText, cryptoKeyRef.current);
     }
 
-    // Decrypt locally for display
     const displayMessageText = cryptoKeyRef.current
       ? await decryptE2EE(encryptedContent, cryptoKeyRef.current)
       : rawText;
@@ -193,7 +192,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-md mx-auto p-4 space-y-4">
+    <div className="flex flex-col min-h-screen w-full max-w-md mx-auto p-4 safe-area-pt space-y-4">
       {/* Header with E2EE Badge */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -202,7 +201,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
           </div>
           <div>
             <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-              <span>{partnerName || 'Partner'}</span>
+              <span>{partnerName || 'Michel'}</span>
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
             </h2>
             <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
@@ -215,13 +214,13 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
       </div>
 
       {/* Messages Feed */}
-      <div className="flex-1 glass-card rounded-3xl p-4 border border-white/10 overflow-y-auto space-y-3">
+      <div className="flex-1 glass-card rounded-3xl p-4 border border-white/10 overflow-y-auto space-y-3 min-h-[340px]">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
             <ShieldCheck className="w-8 h-8 text-emerald-400/80 animate-pulse" />
             <p className="text-center font-semibold text-slate-300">Messages & Voice Notes are End-to-End Encrypted</p>
             <span className="text-[10px] text-slate-500 text-center max-w-[260px]">
-              Only you and {partnerName || 'your partner'} hold the encryption key. No one else can read or listen.
+              Only you and {partnerName || 'Michel'} hold the encryption key. No one else can read or listen.
             </span>
           </div>
         ) : (
@@ -307,7 +306,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
       )}
 
       {/* Input Bar */}
-      <form onSubmit={handleSendText} className="flex items-center gap-2">
+      <form onSubmit={handleSendText} className="flex items-center gap-2 pb-4">
         <input
           type="text"
           value={inputText}

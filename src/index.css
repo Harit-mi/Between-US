@@ -26,12 +26,13 @@
     background: linear-gradient(135deg, #ff4d6d 0%, #ff8fab 100%);
   }
 
+  /* Safe Area for Dynamic Island on iPhone 15 Pro Max & Notched iPhones */
   .safe-area-pt {
-    padding-top: env(safe-area-inset-top, 1rem);
+    padding-top: calc(env(safe-area-inset-top, 24px) + 16px);
   }
 
   .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom, 1rem);
+    padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
   }
 }
 
