@@ -9,28 +9,41 @@ export function triggerHaptic(pattern: number | number[] = 50) {
   }
 }
 
-// Request and fire browser push-style notification
+// Request and fire browser push notification (Compatible with iOS, Android & Desktop)
 export async function sendBrowserNotification(title: string, body: string, icon = '❤️') {
   if (typeof window === 'undefined' || !('Notification' in window)) return;
 
   try {
-    if (Notification.permission === 'granted') {
+    let permission = Notification.permission;
+    if (permission !== 'granted' && permission !== 'denied') {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission === 'granted') {
+      // Check for active Service Worker for iOS/Android Mobile Web Push
+      if ('serviceWorker' in navigator) {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          if (reg && 'showNotification' in reg) {
+            await reg.showNotification(title, {
+              body,
+              icon: '/pwa-192x192.png',
+              badge: '/pwa-192x192.png',
+              tag: 'between-us-notif-' + Date.now(),
+            });
+            return;
+          }
+        } catch {
+          // Fall back to standard Notification
+        }
+      }
+
       new Notification(title, {
         body,
-        icon: `/pwa-192x192.png`,
-        badge: `/pwa-192x192.png`,
-        tag: 'touch-notification',
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        tag: 'between-us-notif-' + Date.now(),
       });
-    } else if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        new Notification(title, {
-          body,
-          icon: `/pwa-192x192.png`,
-          badge: `/pwa-192x192.png`,
-          tag: 'touch-notification',
-        });
-      }
     }
   } catch (err) {
     console.warn('Browser notification error:', err);

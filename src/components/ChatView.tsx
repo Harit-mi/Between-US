@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Mic, Play, Pause, Sparkles, Heart, Square, ShieldCheck, Lock } from 'lucide-react';
+import { Send, Mic, Play, Pause, Sparkles, Square, ShieldCheck, Lock, Languages, Globe } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 import { getCoupleEncryptionKey, encryptE2EE, decryptE2EE } from '../lib/crypto';
+import { translateText } from '../lib/translate';
 
 interface ChatViewProps {
   currentUserId: string;
@@ -14,6 +15,7 @@ interface Message {
   id: string;
   sender_id: string;
   text?: string;
+  translatedText?: string;
   type: 'text' | 'voice';
   audioUrl?: string;
   duration?: string;
@@ -22,9 +24,10 @@ interface Message {
 }
 
 export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, coupleCode = 'LOVE26' }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [enableTranslation, setEnableTranslation] = useState(true);
 
   // E2EE Crypto Key reference
   const cryptoKeyRef = useRef<CryptoKey | null>(null);
@@ -59,13 +62,21 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Send Text Message with AES-256 E2EE
+  // Send Text Message with AES-256 E2EE + Live EN <-> ES Translation
   const handleSendText = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
     triggerHaptic(40);
     const rawText = inputText.trim();
+
+    // Live Translate between English & Spanish
+    let translated: string | undefined = undefined;
+    if (enableTranslation) {
+      // If current UI is English, translate to Spanish for partner; if Spanish, translate to English
+      const targetLang = i18n.language === 'es' ? 'en' : 'es';
+      translated = await translateText(rawText, targetLang);
+    }
 
     let encryptedContent = rawText;
     if (cryptoKeyRef.current) {
@@ -80,6 +91,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
       id: 'm-' + Date.now(),
       sender_id: currentUserId,
       text: displayMessageText,
+      translatedText: translated,
       type: 'text',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isEncrypted: true,
@@ -193,11 +205,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
 
   return (
     <div className="flex flex-col min-h-screen w-full max-w-md mx-auto p-4 safe-area-pt space-y-4">
-      {/* Header with E2EE Badge */}
+      {/* Header with E2EE Badge & Live Translation Toggle */}
       <div className="glass-card rounded-2xl p-4 border border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full gradient-accent-bg flex items-center justify-center font-bold text-white shadow-md shadow-pink-500/20 uppercase">
-            {partnerName ? partnerName.charAt(0) : 'P'}
+            {partnerName ? partnerName.charAt(0) : 'M'}
           </div>
           <div>
             <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
@@ -206,11 +218,27 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
             </h2>
             <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
               <Lock className="w-3 h-3 text-emerald-400" />
-              <span>End-to-End Encrypted (AES-256)</span>
+              <span>AES-256 Encrypted</span>
             </p>
           </div>
         </div>
-        <Sparkles className="w-4 h-4 text-pink-400" />
+
+        {/* Live Translation Toggle Button */}
+        <button
+          onClick={() => {
+            triggerHaptic(40);
+            setEnableTranslation(!enableTranslation);
+          }}
+          className={`py-1.5 px-3 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition ${
+            enableTranslation
+              ? 'bg-pink-500/20 text-pink-300 border-pink-500/40 shadow-sm'
+              : 'glass-pill text-slate-400 border-white/10'
+          }`}
+          title="Toggle Live English <-> Spanish Translation"
+        >
+          <Globe className="w-3.5 h-3.5 text-pink-400" />
+          <span>{enableTranslation ? 'Translate EN ↔ ES' : 'Translation Off'}</span>
+        </button>
       </div>
 
       {/* Messages Feed */}
@@ -220,7 +248,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
             <ShieldCheck className="w-8 h-8 text-emerald-400/80 animate-pulse" />
             <p className="text-center font-semibold text-slate-300">Messages & Voice Notes are End-to-End Encrypted</p>
             <span className="text-[10px] text-slate-500 text-center max-w-[260px]">
-              Only you and {partnerName || 'Michel'} hold the encryption key. No one else can read or listen.
+              🌐 Live English ↔ Spanish auto-translation is active for Harit & Michel!
             </span>
           </div>
         ) : (
@@ -271,8 +299,17 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUserId, partnerName, 
                       </div>
                     </div>
                   ) : (
-                    <div>
-                      <p className="leading-relaxed">{msg.text}</p>
+                    <div className="space-y-1">
+                      <p className="leading-relaxed font-medium">{msg.text}</p>
+
+                      {/* Live Translation Sub-Bubble */}
+                      {msg.translatedText && (
+                        <div className="pt-1 border-t border-white/15 text-[11px] text-pink-200 flex items-start gap-1 font-sans">
+                          <Globe className="w-3 h-3 text-pink-300 shrink-0 mt-0.5" />
+                          <span className="italic">{msg.translatedText}</span>
+                        </div>
+                      )}
+
                       <span className="text-[9px] text-white/70 flex items-center gap-1 mt-1 justify-end">
                         <Lock className="w-2.5 h-2.5 text-emerald-300" />
                         <span>Encrypted</span>
