@@ -8,7 +8,7 @@ import { MemoriesView } from './components/MemoriesView';
 import { StatsView } from './components/StatsView';
 import { TouchOverlay } from './components/TouchOverlay';
 import { SettingsModal } from './components/SettingsModal';
-import { triggerHaptic, sendBrowserNotification } from './lib/vibration';
+import { triggerHaptic, sendBrowserNotification, playTouchChimeSound } from './lib/vibration';
 import { Heart, MessageCircle, Radio as RadioIcon, Image, Sparkles } from 'lucide-react';
 
 export function App() {
@@ -52,7 +52,7 @@ export function App() {
   const [userProfile, setUserProfile] = useState<any>(defaultProfile);
   const [partnerProfile] = useState<any>(defaultPartner);
   const [coupleData] = useState<any>(defaultCouple);
-  
+
   const [touches, setTouches] = useState<any[]>([
     {
       id: 't-1',
@@ -77,58 +77,57 @@ export function App() {
   const [incomingTouch, setIncomingTouch] = useState<any | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Supabase Realtime subscription (if configured)
+  // Real-time WebSocket Touch Broadcast Channel
   useEffect(() => {
-    if (!isSupabaseConfigured || !coupleData?.id) return;
+    if (!isSupabaseConfigured) return;
 
-    const channel = supabase
-      .channel(`realtime-touches-${coupleData.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'touches',
-          filter: `couple_id=eq.${coupleData.id}`,
-        },
-        async (payload) => {
-          const newTouch = payload.new;
+    const channelCode = coupleData?.couple_code || 'LOVE26';
+    const channel = supabase.channel(`touch_room_${channelCode}`);
 
-          let touchType = null;
-          if (newTouch.touch_type_id) {
-            const { data } = await supabase.from('touch_types').select('*').eq('id', newTouch.touch_type_id).single();
-            touchType = data;
-          }
+    channel
+      .on('broadcast', { event: 'send_touch' }, (payload) => {
+        const { senderId, senderName, emoji, typeEn, typeEs } = payload.payload;
 
-          const fullTouch = { ...newTouch, touch_type: touchType };
-          setTouches((prev) => [fullTouch, ...prev]);
+        if (senderId !== userProfile?.id) {
+          // 1. Play sound chime
+          playTouchChimeSound();
 
-          if (newTouch.sender_id !== userProfile?.id) {
-            triggerHaptic([100, 50, 100, 50, 100]);
+          // 2. Trigger vibration
+          triggerHaptic([100, 50, 100, 50, 100]);
 
-            const emoji = touchType?.emoji || '❤️';
-            const senderName = partnerProfile?.nickname || partnerProfile?.name || 'Partner';
-            const typeEn = touchType?.name_en || 'Love';
-            const typeEs = touchType?.name_es || 'Amor';
+          // 3. Add to touches feed
+          const newTouchObj = {
+            id: 't-' + Date.now(),
+            sender_id: senderId,
+            emoji: emoji,
+            name: typeEn,
+            touch_type: { emoji, name_en: typeEn, name_es: typeEs },
+            created_at: new Date().toISOString(),
+          };
 
-            setIncomingTouch({
-              emoji,
-              senderName,
-              typeEn,
-              typeEs,
-            });
+          setTouches((prev) => [newTouchObj, ...prev]);
 
-            const notifText = i18n.language === 'es' ? `${senderName} te envió ${emoji}` : `${senderName} sent you ${emoji}`;
-            sendBrowserNotification('Between Us ❤️', notifText, emoji);
-          }
+          // 4. Pop up animated overlay
+          setIncomingTouch({
+            emoji,
+            senderName: senderName || partnerProfile?.nickname || partnerProfile?.name || 'Partner',
+            typeEn,
+            typeEs,
+          });
+
+          // 5. Fire OS System Push Notification
+          const notifText = i18n.language === 'es'
+            ? `${senderName} te envió ${emoji} ${typeEs}`
+            : `${senderName} sent you ${emoji} ${typeEn}`;
+          sendBrowserNotification('Between Us ❤️', notifText, emoji);
         }
-      )
+      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [coupleData?.id, userProfile?.id, partnerProfile, i18n.language]);
+  }, [coupleData?.couple_code, userProfile?.id, partnerProfile, i18n.language]);
 
   const handleSendTouch = async (touchOption: { emoji: string; name_en: string; name_es: string }) => {
     if (!userProfile) return;
@@ -146,24 +145,22 @@ export function App() {
 
     setTouches((prev) => [optimisticTouch, ...prev]);
 
-    if (isSupabaseConfigured && partnerProfile?.id && coupleData?.id) {
-      try {
-        const { data: touchTypes } = await supabase
-          .from('touch_types')
-          .select('id')
-          .eq('couple_id', coupleData.id)
-          .eq('emoji', touchOption.emoji)
-          .limit(1);
-
-        if (touchTypes && touchTypes.length > 0) {
-          await supabase.rpc('send_touch', {
-            receiver_id: partnerProfile.id,
-            touch_type_id: touchTypes[0].id,
-          });
-        }
-      } catch (err) {
-        console.warn('send_touch RPC exception:', err);
-      }
+    // Broadcast touch instantly via Supabase WebSocket channel
+    if (isSupabaseConfigured) {
+      const channelCode = coupleData?.couple_code || 'LOVE26';
+      const channel = supabase.channel(`touch_room_${channelCode}`);
+      channel.send({
+        type: 'broadcast',
+        event: 'send_touch',
+        payload: {
+          senderId: userProfile.id,
+          senderName: userProfile.nickname || userProfile.name || 'Harit',
+          emoji: touchOption.emoji,
+          typeEn: touchOption.name_en,
+          typeEs: touchOption.name_es,
+          timestamp: Date.now(),
+        },
+      });
     }
   };
 
