@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, Calendar, Sparkles, Award, Flame, Star, Plus, Edit2, Check, Clock } from 'lucide-react';
+import { Heart, Calendar, Sparkles, Award, Flame, Star, Plus, Edit2, Check } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface StatsViewProps {
@@ -12,12 +12,13 @@ interface StatsViewProps {
 export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, totalTouches }) => {
   const { t } = useTranslation();
 
-  // Anniversary date state (persisted in LocalStorage)
+  // Set default anniversary date to 6 days ago (2026-08-08)
   const [anniversaryDate, setAnniversaryDate] = useState<string>(() => {
     try {
-      return localStorage.getItem('between_us_anniversary') || '2024-01-01';
+      const saved = localStorage.getItem('between_us_anniversary');
+      return saved || '2026-08-08';
     } catch {
-      return '2024-01-01';
+      return '2026-08-08';
     }
   });
 
@@ -30,8 +31,9 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
       return saved
         ? JSON.parse(saved)
         : [
-            { id: 's1', title: 'Connected Harit 🇮🇳 & Michel 🇩🇴', date: 'Jan 2024', icon: '💖' },
-            { id: 's2', title: 'First End-to-End Encrypted Chat', date: 'Active', icon: '🔒' },
+            { id: 's1', title: 'Our Journey Began ❤️', date: 'Aug 8, 2026', icon: '💖' },
+            { id: 's2', title: 'Connected Harit 🇮🇳 & Michel 🇩🇴', date: 'Aug 8, 2026', icon: '🔒' },
+            { id: 's3', title: 'First End-to-End Encrypted Chat', date: 'Aug 8, 2026', icon: '💬' },
           ];
     } catch {
       return [];
@@ -62,10 +64,10 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
       const start = new Date(anniversaryDate);
       const now = new Date();
       const diffTime = Math.abs(now.getTime() - start.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return isNaN(diffDays) ? 1 : diffDays;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return isNaN(diffDays) ? 6 : Math.max(1, diffDays);
     } catch {
-      return 1;
+      return 6;
     }
   };
 
@@ -79,7 +81,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
     const newEv = {
       id: 'story-' + Date.now(),
       title: newEventTitle.trim(),
-      date: newEventDate.trim() || new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      date: newEventDate.trim() || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       icon: '✨',
     };
 
@@ -117,14 +119,14 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
             className="text-[11px] text-pink-300 hover:text-white flex items-center gap-1 font-medium glass-pill px-2.5 py-1 rounded-xl"
           >
             {isEditingDate ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Edit2 className="w-3 h-3 text-pink-400" />}
-            <span>{isEditingDate ? 'Done' : 'Set Date'}</span>
+            <span>{isEditingDate ? 'Done' : 'Change Date'}</span>
           </button>
         </div>
 
         {/* Big Days Counter */}
         <div className="text-center py-2">
-          <p className="text-5xl font-extrabold text-white tracking-tight gradient-accent-text">{daysTogether}</p>
-          <p className="text-xs text-slate-400 mt-1">Days of love between Ahmedabad 🇮🇳 & Santo Domingo 🇩🇴</p>
+          <p className="text-5xl font-extrabold text-white tracking-tight gradient-accent-text">{daysTogether} Days</p>
+          <p className="text-xs text-slate-400 mt-1">Day {daysTogether} of love between Ahmedabad 🇮🇳 & Santo Domingo 🇩🇴</p>
         </div>
 
         {/* Date Edit Input Box */}
@@ -192,7 +194,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ partnerName, userName, tot
                 type="text"
                 value={newEventDate}
                 onChange={(e) => setNewEventDate(e.target.value)}
-                placeholder="Date (e.g. Feb 14, 2024)"
+                placeholder="Date (e.g. Feb 14, 2026)"
                 className="flex-1 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-pink-500"
               />
               <button
