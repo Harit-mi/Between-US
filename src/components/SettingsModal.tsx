@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Globe, UserCheck, LogOut, Copy, Check } from 'lucide-react';
+import { X, Globe, UserCheck, LogOut, Copy, Check, RefreshCw } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { triggerHaptic } from '../lib/vibration';
 
@@ -53,8 +53,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (!coupleCode) return;
     navigator.clipboard.writeText(coupleCode);
     setCopied(true);
-    triggerHaptic([30, 30]);
+    triggerHaptic(40);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleForceUpdate = async () => {
+    triggerHaptic(50);
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) await r.unregister();
+      }
+    } catch {}
+    window.location.reload();
   };
 
   return (
@@ -146,14 +161,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         )}
 
-        {/* Logout Button */}
+        {/* Force Update & Clear Cache Button */}
         <div className="pt-2 border-t border-white/10">
+          <button
+            onClick={handleForceUpdate}
+            className="w-full py-2.5 px-4 rounded-xl glass-pill border border-pink-500/30 text-pink-300 text-xs font-semibold hover:bg-white/10 flex items-center justify-center gap-2 transition"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-pink-400" />
+            <span>🔄 Clear Cache & Update App</span>
+          </button>
+        </div>
+
+        {/* Logout Button */}
+        <div className="pt-1">
           <button
             onClick={() => {
               onClose();
               onLogout();
             }}
-            className="w-full py-3 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold hover:bg-rose-500/20 flex items-center justify-center gap-2 transition"
+            className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold hover:bg-rose-500/20 flex items-center justify-center gap-2 transition"
           >
             <LogOut className="w-4 h-4" />
             <span>{t('settings.logout')}</span>
