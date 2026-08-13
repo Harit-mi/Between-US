@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, ExternalLink } from 'lucide-react';
+import { Radio, Music, Disc, Plus, Youtube, Volume2, Sparkles, ExternalLink, Info, Smartphone, Layers } from 'lucide-react';
 import { triggerHaptic } from '../lib/vibration';
 
 interface RadioViewProps {
@@ -10,6 +10,7 @@ interface RadioViewProps {
 export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const { t } = useTranslation();
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [showBgGuide, setShowBgGuide] = useState(false);
 
   const SPOTIFY_PLAYLIST_FULL_URL = 'https://open.spotify.com/playlist/52Fiun5SvbLRCHBpPyitEa?si=0dbf85e6f8fb429c&pt=4bddc171140376f3850ef498f18b30d8';
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -58,6 +59,13 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
   const [inputTitle, setInputTitle] = useState('');
 
   const currentTrack = playlist[currentTrackIndex] || playlist[0];
+
+  // Sync state in LocalStorage so track index persists across tab switches
+  useEffect(() => {
+    try {
+      localStorage.setItem('between_us_radio_track', String(currentTrackIndex));
+    } catch {}
+  }, [currentTrackIndex]);
 
   // Helper to parse YouTube video IDs
   const extractYouTubeId = (url: string) => {
@@ -113,8 +121,62 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
           </div>
           <p className="text-[11px] text-slate-400 mt-1">YouTube Videos & Spotify • Synced with {partnerName || 'Michel'}</p>
         </div>
-        <Sparkles className="w-4 h-4 text-pink-400" />
+        <button
+          onClick={() => {
+            triggerHaptic(40);
+            setShowBgGuide(!showBgGuide);
+          }}
+          className="p-2 rounded-xl glass-pill text-xs text-pink-300 hover:text-white flex items-center gap-1 border border-pink-500/20 active:scale-95 transition"
+        >
+          <Info className="w-3.5 h-3.5 text-pink-400" />
+          <span>Background Guide</span>
+        </button>
       </div>
+
+      {/* Background Play Guide Drawer (Toggleable) */}
+      {showBgGuide && (
+        <div className="glass-card rounded-3xl p-4 border border-pink-500/40 bg-gradient-to-br from-pink-950/50 via-slate-900/90 to-purple-950/50 space-y-3 animate-in fade-in zoom-in duration-200">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <Smartphone className="w-4 h-4 text-pink-400" />
+              <span>How to Play Audio in Background</span>
+            </h3>
+            <button onClick={() => setShowBgGuide(false)} className="text-slate-400 text-xs font-bold">✕</button>
+          </div>
+
+          <div className="space-y-2.5 text-xs text-slate-300 leading-relaxed">
+            <div className="flex items-start gap-2">
+              <span className="text-base">1️⃣</span>
+              <div>
+                <p className="font-bold text-white">Picture-in-Picture (Floating Window)</p>
+                <p className="text-[11px] text-slate-400">
+                  Tap Fullscreen on the video, then swipe up on iPhone or tap the PiP icon. The video will float on screen while you open WhatsApp or Instagram!
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <span className="text-base">2️⃣</span>
+              <div>
+                <p className="font-bold text-white">🟢 Open in Spotify App</p>
+                <p className="text-[11px] text-slate-400">
+                  Tap <b>Open in Spotify App</b> below. Native Spotify plays full audio in the background even when your screen is locked!
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <span className="text-base">3️⃣</span>
+              <div>
+                <p className="font-bold text-white">📺 Open in YouTube App</p>
+                <p className="text-[11px] text-slate-400">
+                  Tap <b>YouTube</b> button next to track title to open directly in the YouTube app for background playback.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Interactive YouTube Video Player Card */}
       <div className="glass-card rounded-3xl p-4 border border-white/10 w-full flex flex-col items-center justify-center space-y-3 shadow-2xl relative overflow-hidden">
@@ -182,7 +244,7 @@ export const RadioView: React.FC<RadioViewProps> = ({ partnerName }) => {
       <div className="glass-card rounded-2xl p-3 border border-emerald-500/30 bg-gradient-to-r from-emerald-950/30 to-slate-900/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base">🟢</span>
-          <span className="text-xs font-bold text-white">Spotify Playlist</span>
+          <span className="text-xs font-bold text-white">Spotify Playlist (Background Audio)</span>
         </div>
         <a
           href={SPOTIFY_PLAYLIST_FULL_URL}
